@@ -1,0 +1,41 @@
+# Сеть с internal: true — контейнеры видят друг друга, в публичный интернет не ходят.
+# Сборка из корня репозитория (родитель CheckD и docker-files):
+#   docker compose -f docker-files/print-service/docker-compose.yml build
+#   docker compose -f docker-files/print-service/docker-compose.yml up -d
+#
+services:
+  checkd-print:
+    platform: linux/amd64
+    # Chrome без увеличенного /dev/shm часто падает при старте («session not created: Chrome instance exited»).
+    shm_size: "1gb"
+    # После OOM / падения процесса контейнер поднимется снова (пока не `docker compose stop`).
+    restart: unless-stopped
+    build:
+      context: ../..
+      dockerfile: docker-files/print-service/Dockerfile
+    environment:
+      FILESTORE_PATH: /data/filestore
+      # Обязателен для entrypoint; совпадает с путём в образе (можно переопределить bind-mount’ом).
+      CHROMEDRIVER_PATH: /usr/local/bin/chromedriver
+      # Имя хоста в ответе pdfurl (для других контейнеров — обычно имя сервиса в compose).
+      PRINT_PUBLIC_HOSTNAME: checkd-print
+      PRINT_PUBLIC_PORT: "8080"
+    volumes:
+      - print_filestore:/data/filestore
+    networks:
+      - print_internal
+    ports:
+      - "8080:8080"
+      - "5004:5004"
+    deploy:
+      resources:
+        limits:
+          # Swift + nginx + chromedriver + Chrome headless; 512M часто не хватает на старт браузера.
+          memory: 1G
+
+volumes:
+  print_filestore:
+
+networks:
+  print_internal:
+    internal: true

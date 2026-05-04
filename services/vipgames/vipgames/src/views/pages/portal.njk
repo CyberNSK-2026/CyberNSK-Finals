@@ -1,0 +1,37 @@
+{% extends "layout.njk" %}
+{% block content %}
+<section class="panel">
+  <h1>Welcome, {{ user.username }}</h1>
+  <div class="stats-grid">
+    <div class="stat"><strong>{{ stats.totalRuns }}</strong><span>Total Runs</span></div>
+    <div class="stat"><strong>{{ stats.completedRuns }}</strong><span>Completed</span></div>
+    <div class="stat"><strong>{{ stats.averageScore }}</strong><span>Avg Score</span></div>
+  </div>
+</section>
+
+<section class="panel game-menu">
+  <h2>Mini Games</h2>
+  <div class="cards">
+    <a class="card" href="/games/puzzle"><h3>Puzzle Forge</h3><p>Assemble stained glass relics.</p></a>
+    <a class="card" href="/games/petfarm"><h3>Pet Farm</h3><p>Raise and bless your companions.</p></a>
+    <a class="card" href="/games/alchemy"><h3>Alchemy Lab</h3><p>Run recipe sequences and craft artifacts.</p></a>
+    <a class="card" href="/games/cards"><h3>Card Hall</h3><p>Collect battle cards and trade.</p></a>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Achievement Board</h2>
+  <div class="table-wrap">
+  <table class="ledger">
+    <thead><tr><th>Code</th><th>Title</th><th>Points</th><th>Unlocked</th></tr></thead>
+    <tbody>
+      {% for a in achievements %}
+      <tr><td>{{ a.code }}</td><td>{{ a.title }}</td><td>{{ a.points }}</td><td>{{ a.unlocked_at }}</td></tr>
+      {% else %}
+      <tr><td colspan="4">No achievements yet</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endblock %}

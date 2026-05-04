@@ -1,0 +1,18 @@
+# Из корня репозитория:
+#   docker compose -f docker-files/token-verfer-1/docker-compose.yml build
+#   docker compose -f docker-files/token-verfer-1/docker-compose.yml up -d
+#
+services:
+  token-verfer:
+    build:
+      context: ../..
+      dockerfile: docker-files/token-verfer-1/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    volumes:
+      # RSA-ключи между перезапусками (Main.java пишет в keys/)
+      - token_verfer_keys:/app/keys
+
+volumes:
+  token_verfer_keys:

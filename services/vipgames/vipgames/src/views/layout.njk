@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }} | VIP Games</title>
+    <link rel="stylesheet" href="/public/css/style.css" />
+  </head>
+  <body>
+    <div class="bg-grid"></div>
+    <header class="topbar">
+      <div class="brand">VIP GAMES PORTAL</div>
+      <nav class="topnav">
+        <a href="/">Home</a>
+        {% if user %}
+        <a href="/portal">Portal</a>
+        <a href="/achievements">Achievements</a>
+        <button class="linklike" type="button" onclick="vipLogout(this)">Logout</button>
+        {% else %}
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+        {% endif %}
+      </nav>
+    </header>
+
+    <main class="shell">
+      <div id="global-message" class="notice" role="status" hidden></div>
+      {% block content %}{% endblock %}
+    </main>
+
+    <script src="/public/js/app.js"></script>
+  </body>
+</html>

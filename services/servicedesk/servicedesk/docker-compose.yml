@@ -1,0 +1,67 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sd
+      POSTGRES_PASSWORD: sd_pass
+      POSTGRES_DB: servicedesk
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sd -d servicedesk"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  dispatchboard:
+    build:
+      context: dispatchboard
+    restart: unless-stopped
+    expose:
+      - "8081"
+    networks:
+      - internal
+
+  app:
+    build:
+      context: app
+    restart: unless-stopped
+    expose:
+      - "8080"
+    env_file:
+      - app/.env
+    volumes:
+      - uploads:/uploads
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+      dispatchboard:
+        condition: service_started
+    networks:
+      - internal
+      - external
+
+  nginx:
+    build:
+      context: nginx
+    restart: unless-stopped
+    ports:
+      - "7070:80"
+    depends_on:
+      - app
+    networks:
+      - external
+
+networks:
+  internal:
+    internal: true
+  external:
+
+volumes:
+  pgdata:
+  uploads:

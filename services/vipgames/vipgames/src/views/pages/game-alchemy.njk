@@ -1,0 +1,32 @@
+{% extends "layout.njk" %}
+{% block content %}
+<section class="panel">
+  <h1>Alchemy Lab</h1>
+  <p class="hint">Current run: <strong id="alchemy-current-id">none</strong></p>
+  <div class="flow">
+    <div class="step">
+      <span class="step-index">1</span>
+      <div>
+        <h2>Start Run</h2>
+        <label>Recipe <input id="alchemy-recipe" type="text" value="moon_salt" maxlength="64" /></label>
+        <button class="btn" type="button" onclick="createAlchemyRun(this)">Create Run</button>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-index">2</span>
+      <div>
+        <h2>Finalize Artifact</h2>
+        <div class="field-grid">
+          <label>Run ID <input id="alchemy-run-id" type="number" min="1" inputmode="numeric" /></label>
+          <label>Artifact note <input id="alchemy-note" type="text" maxlength="256" /></label>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button" onclick="finalizeAlchemy(this)">Finalize</button>
+          <button class="btn ghost" type="button" onclick="loadAlchemyArtifact(this)">Load Artifact</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <pre id="alchemy-out" class="output notice" role="status" hidden></pre>
+</section>
+{% endblock %}

@@ -1,0 +1,11 @@
+services:
+  identityhub:
+    build: .
+    ports:
+      - "8768:8080"
+    volumes:
+      - identityhub_data:/data
+    restart: unless-stopped
+
+volumes:
+  identityhub_data:

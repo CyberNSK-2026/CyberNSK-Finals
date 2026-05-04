@@ -1,0 +1,16 @@
+services:
+  bank:
+    build: .
+    container_name: bank
+    restart: unless-stopped
+    ports:
+      - "5000:8080"
+    volumes:
+      - bank_data:/app/data
+    environment:
+      - RUST_LOG=info
+      - MERCHANT_KEY=merchant-key-2026-ctf
+      - ALLOW_PRIVATE_CALLBACKS=1
+
+volumes:
+  bank_data:

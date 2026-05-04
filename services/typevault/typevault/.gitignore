@@ -1,0 +1,16 @@
+deps/
+.claude/
+.venv/
+
+_build/
+*.beam
+erl_crash.dump
+
+native/*/target/
+*.so
+priv/native/
+!priv/native/
+!priv/native/tvf_parser.so
+
+__pycache__/
+*.pyc

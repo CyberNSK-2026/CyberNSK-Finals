@@ -1,0 +1,32 @@
+{% extends "layout.njk" %}
+{% block content %}
+<section class="panel">
+  <h1>Puzzle Forge</h1>
+  <p class="hint">Current board: <strong id="puzzle-current-id">none</strong></p>
+  <div class="flow">
+    <div class="step">
+      <span class="step-index">1</span>
+      <div>
+        <h2>Create Board</h2>
+        <label>Board title <input id="puzzle-title" type="text" value="castle-window" maxlength="80" /></label>
+        <button class="btn" type="button" onclick="createPuzzleBoard(this)">Create Board</button>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-index">2</span>
+      <div>
+        <h2>Save Solved Layer</h2>
+        <div class="field-grid">
+          <label>Board ID <input id="puzzle-id" type="number" min="1" inputmode="numeric" /></label>
+          <label>Payload <input id="puzzle-payload" type="text" maxlength="256" /></label>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button" onclick="savePuzzleStego(this)">Save Layer</button>
+          <button class="btn ghost" type="button" onclick="loadPuzzlePreview(this)">Preview</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <pre id="puzzle-out" class="output notice" role="status" hidden></pre>
+</section>
+{% endblock %}

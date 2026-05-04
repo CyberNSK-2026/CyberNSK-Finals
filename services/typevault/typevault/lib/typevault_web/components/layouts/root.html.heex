@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full" style="background:#09090f">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="csrf-token" content={get_csrf_token()}/>
+  <.live_title suffix=" · TypeVault">
+    <%= assigns[:page_title] || "Studio" %>
+  </.live_title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tv: {
+              bg:      '#09090f',
+              surf:    '#13131f',
+              surf2:   '#1a1a2e',
+              pri:     '#7c3aed',
+              'pri-lt':'#a78bfa',
+              acc:     '#06b6d4',
+              muted:   '#64748b',
+              border:  'rgba(255,255,255,0.07)',
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system','BlinkMacSystemFont','"Segoe UI"','sans-serif'],
+            mono: ['"JetBrains Mono"','ui-monospace','monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+  <style>
+    * { box-sizing: border-box; }
+    :root { color-scheme: dark; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    ::selection { background: rgba(124,58,237,.35); color: #e2e8f0; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #13131f; }
+    ::-webkit-scrollbar-thumb { background: #2d2d4a; border-radius: 3px; }
+
+    /* LiveView transitions */
+    [data-phx-loading] { opacity: 0.7; transition: opacity .15s; }
+
+    /* Fade-in for route changes */
+    .lv-page { animation: fadeUp .22s ease both; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Tag chips */
+    .tag-chip {
+      display: inline-flex; align-items: center;
+      padding: .2rem .65rem; border-radius: 100px; font-size: .72rem;
+      font-weight: 600; letter-spacing: .03em; cursor: pointer;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04); color: #94a3b8;
+      transition: all .15s;
+    }
+    .tag-chip:hover, .tag-chip.active {
+      background: rgba(124,58,237,.18);
+      border-color: rgba(124,58,237,.4);
+      color: #a78bfa;
+    }
+
+    /* Skeleton loader */
+    .skeleton {
+      background: linear-gradient(90deg, #1a1a2e 25%, #232340 50%, #1a1a2e 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      padding: .75rem 1.25rem; border-radius: 10px; font-size: .85rem;
+      font-weight: 500; z-index: 9999;
+      box-shadow: 0 8px 24px rgba(0,0,0,.5);
+      animation: slideUp .25s ease both;
+    }
+    @keyframes slideUp { from{transform:translateY(12px);opacity:0} to{transform:translateY(0);opacity:1} }
+    .toast-ok  { background: #14532d; color: #4ade80; border: 1px solid rgba(74,222,128,.25); }
+    .toast-err { background: #450a0a; color: #f87171; border: 1px solid rgba(248,113,113,.25); }
+  </style>
+
+  <script defer src={~p"/assets/app.js"}></script>
+</head>
+<body class="h-full min-h-screen" style="background:#09090f; color:#e2e8f0;">
+  <%= @inner_content %>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends "layout.njk" %}
+{% block content %}
+<section class="panel auth">
+  <h1>Login</h1>
+  <form class="form-stack" onsubmit="vipLogin(event)">
+    <label>Username
+      <input id="login-username" name="username" type="text" autocomplete="username" required minlength="3" maxlength="32" pattern="[a-zA-Z0-9_]+" />
+    </label>
+    <label>Password
+      <input id="login-password" name="password" type="password" autocomplete="current-password" required minlength="8" maxlength="128" />
+    </label>
+    <button class="btn" type="submit">Sign In</button>
+  </form>
+  <div id="auth-message" class="notice" role="status" hidden></div>
+  <p class="hint">No account? <a href="/register">Register</a></p>
+</section>
+{% endblock %}

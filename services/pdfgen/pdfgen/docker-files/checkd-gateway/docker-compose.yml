@@ -1,0 +1,70 @@
+# Из корня репозитория:
+#   docker compose -f docker-files/checkd-gateway/docker-compose.yml build
+#   docker compose -f docker-files/checkd-gateway/docker-compose.yml up -d
+#
+# 8081 — публично (фронт + API, без export). 8084 — только внутри сети (export + статика для печати).
+#
+# Token-verfer: том `token_verfer_keys` у checkd (ro) + публичный ключ с 8081 как `/keys/public.key`.
+#
+# Печать: подключи контейнер print-service к этой же Docker-сети (или общей external-сети),
+# задай CHECKD_PRINT_SERVICE_HOST/PORT и на стороне печати — CHECKD_EXPORT_ANSWER_HOST=checkd,
+# CHECKD_EXPORT_ANSWER_PORT=8084 (см. PrintController.swift).
+#
+services:
+  checkd:
+    build:
+      context: ../..
+      dockerfile: docker-files/checkd-gateway/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    expose:
+      - "8084"
+    environment:
+      PG_HOST: postgres
+      PG_PORT: "5432"
+      PG_USER: checkd
+      PG_PASSWORD: ctf_pass
+      PG_DATABASE: checkd
+      # Хост/порт CheckD Print service (имя сервиса в compose print-service — checkd-print, порт 8080).
+      CHECKD_PRINT_SERVICE_HOST: checkd-print
+      CHECKD_PRINT_SERVICE_PORT: "8080"
+      CHECKD_SIGNATURE_API_HOST: token-verfer
+      CHECKD_SIGNATURE_API_PORT: "8082"
+    volumes:
+      - token_verfer_keys:/var/lib/checkd/token-verfer-keys:ro
+    depends_on:
+      - postgres
+      - token-verfer
+    networks:
+      - checkd_gateway_net
+
+  token-verfer:
+    build:
+      context: ../..
+      dockerfile: docker-files/token-verfer-1/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    volumes:
+      - token_verfer_keys:/app/keys
+    networks:
+      - checkd_gateway_net
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: checkd
+      POSTGRES_USER: checkd
+      POSTGRES_PASSWORD: ctf_pass
+    volumes:
+      - ../../postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - checkd_gateway_net
+
+networks:
+  checkd_gateway_net:
+
+volumes:
+  token_verfer_keys:

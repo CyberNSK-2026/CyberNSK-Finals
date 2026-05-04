@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CheckD Login form</title>
+    <link rel="stylesheet" href="bootstrap-5.3.8-dist/css/bootstrap.min.css"/>
+    <script src="bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            padding-top: 70px;
+        }
+        .register-widget {
+            width: max(30%, 576px);
+            border: 1px solid black;
+            border-radius: 15px;
+            box-shadow: 3px 3px 10px 5px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">CheckD Checklist system</span>
+        </div>
+    </nav>
+    <div class="container register-widget">
+        <form>
+            <div class="mb-3 mt-3">
+                <label for="username" class="form-label">Username:</label>
+                <input type="text" class="form-control" id="username" placeholder="Enter your name" name="username">
+            </div>
+            <div class="mb-3 mt-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" class="form-control" id="email" placeholder="Enter email" name="email">
+            </div>
+            <div class="mb-3">
+                <label for="pwd" class="form-label">Password:</label>
+                <input type="password" class="form-control" id="pwd" placeholder="Enter password" name="pswd">
+            </div>
+            <button class="form-control btn btn-primary">Register</button>
+            <br>
+            <p class="text-secondary small">Have account? <a class="" href="login.html">Login</a></p>
+        </form>
+    </div>
+</body>
+<script src="js/app-config.js"></script>
+<script src="js/register.js"></script>
+</html>

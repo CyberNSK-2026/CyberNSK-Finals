@@ -1,0 +1,39 @@
+{% extends "layout.njk" %}
+{% block content %}
+<section class="panel hero">
+  <h1>Pixel Medieval Arcade</h1>
+  <p>Old-school browser castle with four mini-games, player tracking, and achievement board.</p>
+  {% if user %}
+  <a class="btn" href="/portal">Enter Portal</a>
+  {% else %}
+  <div class="row">
+    <a class="btn" href="/register">Create Account</a>
+    <a class="btn ghost" href="/login">Login</a>
+  </div>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Recent Realm Activity</h2>
+  <div class="table-wrap">
+  <table class="ledger">
+    <thead>
+      <tr><th>Player</th><th>Game</th><th>Score</th><th>Status</th><th>At</th></tr>
+    </thead>
+    <tbody>
+      {% for r in recentRuns %}
+      <tr>
+        <td>{{ r.username }}</td>
+        <td>{{ r.game }}</td>
+        <td>{{ r.score }}</td>
+        <td>{{ r.status }}</td>
+        <td>{{ r.createdAt }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5">No runs yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endblock %}

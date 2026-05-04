@@ -1,0 +1,58 @@
+version: "3.9"
+
+networks:
+  typevault_net:
+    driver: bridge
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: typevault_db
+    restart: unless-stopped
+    networks:
+      - typevault_net
+    environment:
+      POSTGRES_USER: typevault
+      POSTGRES_PASSWORD: typevault_secret
+      POSTGRES_DB: typevault_prod
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # DB is intentionally not exposed on the host — reachable only within
+    # typevault_net.  The app connects via the service name "db".
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U typevault"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build:
+      context: .
+    container_name: typevault_app
+    restart: unless-stopped
+    networks:
+      - typevault_net
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: "ecto://typevault:typevault_secret@db/typevault_prod"
+      SECRET_KEY_BASE: "CHANGE_ME_IN_PROD_use_mix_phx_gen_secret_output_here_64_chars_min"
+      GUARDIAN_SECRET: "CHANGE_ME_IN_PROD_guardian_jwt_signing_key_must_be_strong"
+      PHX_HOST: "0.0.0.0"
+      PORT: "4000"
+      MIX_ENV: "prod"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4000/api/gallery > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    command: >
+      sh -c "bin/typevault eval 'TypeVault.Release.migrate()' &&
+             bin/typevault start"
+
+volumes:
+  pgdata:

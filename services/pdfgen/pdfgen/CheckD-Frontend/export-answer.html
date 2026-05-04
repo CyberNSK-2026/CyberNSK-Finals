@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CheckD — Answer export</title>
+    <link rel="stylesheet" href="bootstrap-5.3.8-dist/css/bootstrap.min.css"/>
+    <script src="bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background: #f8f9fa;
+            padding: 1.5rem 1rem 2.5rem;
+        }
+        .export-meta-card {
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            box-shadow: 2px 2px 8px 4px rgba(0, 0, 0, 0.08);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            background: #fff;
+            max-width: 960px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .checklist-row {
+            width: 100%;
+            max-width: 960px;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid #000;
+            border-radius: 15px;
+            box-shadow: 2px 2px 8px 4px rgba(0, 0, 0, 0.15);
+            padding: 1rem 1rem 1.25rem;
+            background: #fff;
+        }
+        .answer-readonly .btn:disabled {
+            opacity: 1;
+            cursor: default;
+        }
+        .answer-readonly .btn-outline-secondary:disabled {
+            opacity: 0.45;
+        }
+        .answer-readonly .btn-primary:disabled {
+            border-color: #0d6efd;
+        }
+        #export-root[hidden] {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<div id="export-status" class="container" style="max-width:960px;margin-left:auto;margin-right:auto;"></div>
+
+<div id="export-root" hidden>
+    <div class="container export-meta-card">
+        <h1 class="h5 mb-3 text-secondary">Exported answer</h1>
+        <dl class="row mb-0 small">
+            <dt class="col-sm-4 col-md-3">Answered by</dt>
+            <dd class="col-sm-8 col-md-9"><strong id="meta-answered-by"></strong></dd>
+            <dt class="col-sm-4 col-md-3">Completed at</dt>
+            <dd class="col-sm-8 col-md-9 text-body-secondary" id="meta-completed-at"></dd>
+            <dt class="col-sm-4 col-md-3">Checklist author</dt>
+            <dd class="col-sm-8 col-md-9"><strong id="meta-checklist-author"></strong></dd>
+            <dt class="col-sm-4 col-md-3">Answer #</dt>
+            <dd class="col-sm-8 col-md-9"><strong id="meta-answer-id"></strong></dd>
+        </dl>
+    </div>
+
+    <div class="container checklist-row">
+        <h2 class="h4 mb-2" id="checklist-title"></h2>
+        <p class="text-secondary mb-4" id="checklist-description"></p>
+        <table class="table mb-0 answer-readonly">
+            <tbody id="questions-tbody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="js/app-config.js"></script>
+<script src="js/export-answer-page.js"></script>
+</body>
+</html>

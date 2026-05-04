@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: silverpear-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: silverpear
+      POSTGRES_USER: silverpear
+      POSTGRES_PASSWORD: silverpear
+    volumes:
+      - silverpear_db_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: silverpear-backend
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      SILVERPEAR_ADDR: 0.0.0.0:8080
+      SILVERPEAR_DB_URL: postgres://silverpear:silverpear@db:5432/silverpear?sslmode=disable
+      SILVERPEAR_MIGRATIONS_DIR: /app/migrations
+    expose:
+      - "8080"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: silverpear-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "7777:7777"
+
+volumes:
+  silverpear_db_data:

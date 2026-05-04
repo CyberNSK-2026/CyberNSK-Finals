@@ -1,0 +1,100 @@
+# Единый стек из корня репозитория (родитель каталога docker-files):
+#   docker compose -f docker-files/docker-compose.yml build
+#   docker compose -f docker-files/docker-compose.yml up -d
+#
+# Сборка checkd / checkd-print: общий кэш checkd-swiftpm + checkd-swift-clang; .build раздельно (checkd-swift-dotbuild-checkd | -print).
+#
+# Сервисы: CheckD gateway (8081/8084), CheckD Print (8080), token-verfer (8082), Postgres.
+# Учётка БД в compose литералами; CheckD читает подключение из PG_* в рантайме (main.swift).
+# Token-verfer: CHECKD_SIGNATURE_API_* + том ключей на checkd (ro); публичный ключ с 8081: /keys/public.key.
+#
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: checkd
+      POSTGRES_USER: checkd
+      POSTGRES_PASSWORD: ctf_pass
+    ports:
+      - "5006:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - ctf
+
+  checkd:
+    build:
+      context: ..
+      dockerfile: docker-files/checkd-gateway/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    expose:
+      - "8084"
+    environment:
+      PG_HOST: postgres
+      PG_PORT: "5432"
+      PG_USER: checkd
+      PG_PASSWORD: ctf_pass
+      PG_DATABASE: checkd
+      CHECKD_PRINT_SERVICE_HOST: checkd-print
+      CHECKD_PRINT_SERVICE_PORT: "8080"
+      CHECKD_SIGNATURE_API_HOST: token-verfer
+      CHECKD_SIGNATURE_API_PORT: "8082"
+    volumes:
+      - token_verfer_keys:/var/lib/checkd/token-verfer:rw
+    depends_on:
+      - postgres
+      - token-verfer
+    networks:
+      - ctf
+
+  checkd-print:
+    platform: linux/amd64
+    shm_size: "1gb"
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: docker-files/print-service/Dockerfile
+    ports:
+      - "8080:8080"
+      - "5004:5004"
+    environment:
+      FILESTORE_PATH: /data/filestore
+      CHROMEDRIVER_PATH: /usr/local/bin/chromedriver
+      PRINT_PUBLIC_HOSTNAME: checkd-print
+      PRINT_PUBLIC_PORT: "8080"
+      CHECKD_EXPORT_ANSWER_HOST: checkd
+      CHECKD_EXPORT_ANSWER_PORT: "8084"
+    volumes:
+      - print_filestore:/data/filestore
+    depends_on:
+      - checkd
+    networks:
+      - ctf
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  token-verfer:
+    build:
+      context: ..
+      dockerfile: docker-files/token-verfer-1/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    volumes:
+      - token_verfer_keys:/app/keys
+    networks:
+      - ctf
+
+networks:
+  ctf:
+
+volumes:
+  postgres_data:
+  print_filestore:
+  token_verfer_keys:

@@ -1,0 +1,25 @@
+[package]
+name = "ctf-bank"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4.4"
+actix-cors = "0.7"
+actix-files = "0.6"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+jsonwebtoken = "9.2"
+rusqlite = { version = "0.31", features = ["bundled"] }
+sha2 = "0.10"
+hmac = "0.12"
+hkdf = "0.12"
+hex = "0.4"
+uuid = { version = "1.6", features = ["v4"] }
+chrono = "0.4"
+tokio = { version = "1", features = ["full", "time"] }
+reqwest = { version = "0.11", features = ["json"] }
+rsa = { version = "0.9", features = ["pem"] }
+rand = "0.8"
+log = "0.4"
+env_logger = "0.10"

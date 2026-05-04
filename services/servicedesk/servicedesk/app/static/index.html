@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ServiceDesk</title>
+<style>
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --surface2: #242736;
+    --border: #2e3148; --accent: #6c63ff; --accent2: #ff6584;
+    --text: #e2e8f0; --muted: #718096; --success: #48bb78;
+    --warn: #ed8936; --danger: #fc8181;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; }
+  a { color: var(--accent); text-decoration: none; }
+
+  /* Layout */
+  #app { display: flex; min-height: 100vh; }
+  #sidebar { width: 220px; background: var(--surface); border-right: 1px solid var(--border); padding: 20px 0; flex-shrink: 0; }
+  #main { flex: 1; padding: 24px; overflow-y: auto; }
+
+  /* Sidebar */
+  .logo { padding: 0 20px 20px; font-size: 18px; font-weight: 700; color: var(--accent); border-bottom: 1px solid var(--border); }
+  .logo span { color: var(--accent2); }
+  .nav-section { padding: 16px 20px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; cursor: pointer; color: var(--muted); transition: all .15s; border-left: 3px solid transparent; }
+  .nav-item:hover, .nav-item.active { color: var(--text); background: var(--surface2); border-left-color: var(--accent); }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .nav-counter { margin-left: auto; min-width: 18px; padding: 1px 6px; border-radius: 999px; background: var(--accent2); color: #fff; font-size: 11px; text-align: center; }
+  .user-info { padding: 16px 20px; border-top: 1px solid var(--border); margin-top: auto; font-size: 12px; color: var(--muted); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge-agent { background: #6c63ff22; color: var(--accent); }
+  .badge-customer { background: #ff658422; color: var(--accent2); }
+  .badge-low { background: #2d374822; color: var(--muted); }
+  .badge-medium { background: #ed893622; color: var(--warn); }
+  .badge-high { background: #fc818122; color: var(--danger); }
+  .badge-backlog { background: #2d374855; color: var(--muted); }
+  .badge-open { background: #6c63ff22; color: var(--accent); }
+  .badge-closed { background: #48bb7822; color: var(--success); }
+  .badge-paused { background: #2d374855; color: var(--muted); }
+
+  /* Auth */
+  #auth-screen { max-width: 400px; margin: 80px auto; }
+  .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .tab { padding: 10px 20px; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Cards & Forms */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .card-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .form-group { margin-bottom: 14px; }
+  label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  input, select, textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; color: var(--text); font-size: 14px; font-family: inherit; outline: none; transition: border-color .15s; }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { min-height: 80px; resize: vertical; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; transition: all .15s; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #5a52d5; }
+  .btn-danger { background: #fc818122; color: var(--danger); border: 1px solid #fc818144; }
+  .btn-danger:hover { background: #fc818133; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* Ticket list */
+  .ticket-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); margin-bottom: 8px; cursor: pointer; transition: border-color .15s; }
+  .ticket-row:hover { border-color: var(--accent); }
+  .ticket-title { flex: 1; font-weight: 500; }
+  .ticket-meta { font-size: 11px; color: var(--muted); }
+
+  /* Panels */
+  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .panel-title { font-size: 20px; font-weight: 700; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .text-muted { color: var(--muted); }
+  .mono { font-family: monospace; font-size: 12px; background: var(--surface2); padding: 2px 6px; border-radius: 4px; }
+  .alert { padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; font-size: 13px; }
+  .alert-error { background: #fc818122; border: 1px solid #fc818144; color: var(--danger); }
+  .alert-success { background: #48bb7822; border: 1px solid #48bb7844; color: var(--success); }
+  pre { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  .artifact-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--surface2); border-radius: 6px; margin-bottom: 6px; }
+  .artifact-row .artifact-info { flex: 1; }
+  .artifact-name { font-weight: 500; }
+  .artifact-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .message-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .message-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .message-meta { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .message-body { white-space: pre-wrap; word-break: break-word; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
+  .form-help { color: var(--muted); font-size: 12px; line-height: 1.5; }
+  .notification-row { padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 10px; cursor: pointer; transition: border-color .15s, transform .15s; }
+  .notification-row:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .notification-row.unread { border-left: 3px solid var(--accent2); background: #ff65840d; }
+  .notification-summary { font-weight: 600; margin-bottom: 6px; }
+  .notification-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #toast { position: fixed; bottom: 24px; right: 24px; z-index: 999; }
+  .toast-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; margin-top: 8px; font-size: 13px; animation: slidein .2s; max-width: 320px; }
+  .toast-item.ok { border-left: 3px solid var(--success); }
+  .toast-item.err { border-left: 3px solid var(--danger); }
+  @keyframes slidein { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: none; } }
+  #sidebar { display: flex; flex-direction: column; }
+  .sidebar-bottom { margin-top: auto; }
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" style="display:none">
+  <div class="card">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:28px;font-weight:800;color:var(--accent)">Service<span style="color:var(--accent2)">Desk</span></div>
+      <div style="color:var(--muted);margin-top:4px">Support ticket system</div>
+    </div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('login')">Login</div>
+      <div class="tab" onclick="switchTab('register')">Register</div>
+    </div>
+    <div id="tab-login">
+      <div class="form-group"><label>Username</label><input id="login-user" placeholder="username" /></div>
+      <div class="form-group"><label>Password</label><input id="login-pass" type="password" placeholder="••••••" /></div>
+      <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Sign In</button>
+    </div>
+    <div id="tab-register" style="display:none">
+      <div class="form-group"><label>Username</label><input id="reg-user" placeholder="username" /></div>
+      <div class="form-group"><label>Email</label><input id="reg-email" placeholder="user@example.com" /></div>
+      <div class="form-group"><label>Password</label><input id="reg-pass" type="password" placeholder="••••••" /></div>
+      <div class="text-muted" style="margin-bottom:14px">Support workspaces are provisioned internally.</div>
+      <button class="btn btn-primary" style="width:100%" onclick="doRegister()">Create Account</button>
+    </div>
+    <div id="auth-error" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+  <div id="sidebar">
+    <div class="logo">Service<span>Desk</span></div>
+    <div class="nav-section">Main</div>
+    <div class="nav-item active" onclick="showPanel('tickets')" id="nav-tickets">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Tickets
+    </div>
+    <div class="nav-item" onclick="showPanel('updates')" id="nav-updates">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 17h5l-1.4-1.4A2 2 0 0118 14.17V11a6 6 0 10-12 0v3.17c0 .53-.21 1.04-.59 1.43L4 17h5"/><path d="M10 17a2 2 0 004 0"/></svg>
+      Updates
+      <span class="nav-counter" id="nav-updates-count" style="display:none">0</span>
+    </div>
+    <div class="nav-item" onclick="showPanel('new-ticket')" id="nav-new-ticket">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+      New Ticket
+    </div>
+    <div class="nav-item" onclick="showPanel('profile')" id="nav-profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 21c0-3.5 2.5-6 6-6s6 2.5 6 6"/></svg>
+      Profile
+    </div>
+
+    <div class="nav-section">Workspace</div>
+      <div class="nav-item" onclick="showPanel('integrations')" id="nav-integrations">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+      Endpoints
+    </div>
+    <div id="nav-board-wrap">
+      <div class="nav-section">Support</div>
+      <div class="nav-item" onclick="showPanel('board')" id="nav-board">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Queue
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="user-info">
+        <div id="sidebar-user">—</div>
+        <div id="sidebar-role"></div>
+        <div style="margin-top:8px"><a href="#" onclick="doLogout()">Sign out</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="main">
+    <!-- TICKETS PANEL -->
+    <div id="panel-tickets" class="panel">
+      <div class="panel-header">
+        <div class="panel-title" id="tickets-panel-title">My Tickets</div>
+        <button class="btn btn-primary btn-sm" onclick="showPanel('new-ticket')">+ New Ticket</button>
+      </div>
+      <div id="tickets-list"></div>
+    </div>
+
+    <div id="panel-updates" class="panel" style="display:none">
+      <div class="panel-header">
+        <div class="panel-title">Recent Updates</div>
+        <button class="btn btn-ghost btn-sm" onclick="markNotificationsSeen()">Mark all seen</button>
+      </div>
+      <div class="card">
+        <div class="form-help" style="margin-bottom:14px">This feed tracks ticket changes that affect your requests or your assigned queue.</div>
+        <div id="notifications-list"></div>
+      </div>
+    </div>
+
+    <!-- NEW TICKET -->
+    <div id="panel-new-ticket" class="panel" style="display:none">
+      <div class="panel-header"><div class="panel-title">New Ticket</div></div>
+      <div class="card">
+        <div class="form-group"><label>Title</label><input id="nt-title" placeholder="Describe your issue" /></div>
+        <div class="form-group"><label>Description</label><textarea id="nt-desc" placeholder="Detailed description..."></textarea></div>
+        <div class="grid2">
+          <div class="form-group"><label>Vendor Case ID</label><input id="nt-vendor-case-id" placeholder="Optional vendor escalation ID" /></div>
+          <div class="form-group"><label>Device Serial</label><input id="nt-serial" placeholder="Optional asset serial" /></div>
+        </div>
+        <div class="grid2">
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="nt-priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="createTicket()">Create Ticket</button>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="panel-profile" class="panel" style="display:none">
+      <div class="panel-header"><div class="panel-title">Profile</div></div>
+      <div class="card">
+        <div class="form-group"><label>Username</label><input id="pf-username" /></div>
+        <div class="form-group"><label>Email</label><input id="pf-email" /></div>
+        <div class="form-group"><label>Contact Phone</label><input id="pf-phone" placeholder="+1 555 0100" /></div>
+        <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+      </div>
+    </div>
+
+    <!-- TICKET DETAIL -->
+    <div id="panel-ticket-detail" class="panel" style="display:none">
+      <div class="panel-header">
+        <button class="btn btn-ghost btn-sm" onclick="goBackFromTicket()">← Back</button>
+        <div class="btn-row">
+          <button class="btn btn-ghost btn-sm" onclick="shareTicket()">🔗 Share</button>
+          <button class="btn btn-ghost btn-sm" onclick="generateReport()">📄 Case Summary</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportTicket()">⬇ Export Case</button>
+        </div>
+      </div>
+      <div id="ticket-detail-content"></div>
+    </div>
+
+    <!-- BOARD (agent) -->
+    <div id="panel-board" class="panel" style="display:none">
+      <div class="panel-header"><div class="panel-title">Support Queue</div></div>
+      <div id="board-list"></div>
+    </div>
+
+    <!-- INTEGRATIONS -->
+    <div id="panel-integrations" class="panel" style="display:none">
+      <div class="panel-header">
+        <div class="panel-title" id="integrations-panel-title">Notification Endpoints</div>
+        <button class="btn btn-primary btn-sm" onclick="toggleNewIntegration()">+ Add</button>
+      </div>
+      <div id="new-integration-form" style="display:none" class="card">
+        <input id="int-id" type="hidden" />
+        <div class="card-title" id="integration-form-title">New Endpoint</div>
+        <div class="form-group" id="integration-ticket-group">
+          <label>Ticket</label>
+          <select id="int-ticket"></select>
+        </div>
+        <div class="form-group">
+          <label>Notification System</label>
+          <select id="int-provider" onchange="updateIntegrationProviderHint()"></select>
+        </div>
+        <div class="form-help" id="int-provider-hint" style="margin-bottom:14px"></div>
+        <div class="form-group"><label>Destination</label><input id="int-name" placeholder="Incident Room, SecOps Feed, Customer Alerts" /></div>
+        <div class="form-group"><label>Signing Token</label><input id="int-signing-token" placeholder="optional" /></div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="int-active">
+            <option value="true" selected>Active</option>
+            <option value="false">Paused</option>
+          </select>
+        </div>
+        <div class="form-help" style="margin-bottom:14px">ServiceDesk will format notifications for the selected system automatically and send them to the configured provider channel.</div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="saveIntegration()">Save</button>
+          <button class="btn btn-ghost" onclick="cancelIntegrationEdit()">Cancel</button>
+        </div>
+      </div>
+      <div id="integrations-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+const DELIVERY_PROVIDERS = [
+  { key: 'discord', label: 'Discord', summary: 'Embed-based notifications for incident channels and private rooms.' },
+  { key: 'slack', label: 'Slack', summary: 'Block-based messages for workspace channels and alert streams.' },
+  { key: 'teams', label: 'Microsoft Teams', summary: 'MessageCard notifications for operations and escalation rooms.' },
+  { key: 'generic_webhook', label: 'Generic Webhook', summary: 'Generic JSON event delivery for sinks and automation bridges.' },
+];
+let token = localStorage.getItem('sd_token');
+let currentUser = null;
+let currentTicket = null;
+let previousPanel = 'tickets';
+let availableTickets = [];
+let currentIntegrations = [];
+let notifications = [];
+let notificationsReady = false;
+let notificationPollHandle = null;
+let toastedNotificationIds = new Set();
+
+function isSupportMode() {
+  return !!(currentUser && currentUser.support_mode);
+}
+
+function providerMeta(key) {
+  return DELIVERY_PROVIDERS.find(item => item.key === key) || DELIVERY_PROVIDERS[0];
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+async function init() {
+  if (token) {
+    try {
+      const me = await api('GET', '/api/users/me');
+      currentUser = me;
+      showApp();
+    } catch { showAuth(); }
+  } else { showAuth(); }
+}
+
+function showAuth() {
+  document.getElementById('auth-screen').style.display = 'block';
+  document.getElementById('app').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('sidebar-user').textContent = currentUser.username;
+  document.getElementById('sidebar-role').innerHTML =
+    `<span class="badge badge-${isSupportMode() ? 'agent' : currentUser.role}">${isSupportMode() ? 'support' : currentUser.role}</span>`;
+  document.getElementById('tickets-panel-title').textContent =
+    isSupportMode() ? 'Assigned Requests' : 'My Tickets';
+  document.getElementById('nav-new-ticket').style.display =
+    isSupportMode() ? 'none' : '';
+  document.getElementById('nav-integrations').style.display = '';
+  startNotificationPolling();
+  if (!isSupportMode()) {
+    document.getElementById('nav-board-wrap').style.display = 'none';
+    showPanel('tickets');
+    return;
+  }
+  document.getElementById('nav-board-wrap').style.display = '';
+  showPanel('board');
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-login').style.display = tab === 'login' ? '' : 'none';
+  document.getElementById('tab-register').style.display = tab === 'register' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (i===0) === (tab==='login')));
+}
+
+async function doLogin() {
+  const user = document.getElementById('login-user').value;
+  const pass = document.getElementById('login-pass').value;
+  const form = new URLSearchParams({ username: user, password: pass });
+  try {
+    const res = await fetch('/api/auth/login', { method:'POST', body: form });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Login failed');
+    token = data.access_token;
+    localStorage.setItem('sd_token', token);
+    const me = await api('GET', '/api/users/me');
+    currentUser = me;
+    showApp();
+  } catch(e) {
+    document.getElementById('auth-error').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  }
+}
+
+async function doRegister() {
+  const body = {
+    username: document.getElementById('reg-user').value,
+    email: document.getElementById('reg-email').value,
+    password: document.getElementById('reg-pass').value,
+  };
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Register failed');
+    token = data.access_token;
+    localStorage.setItem('sd_token', token);
+    const me = await api('GET', '/api/users/me');
+    currentUser = me;
+    showApp();
+  } catch(e) {
+    document.getElementById('auth-error').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  }
+}
+
+function doLogout() {
+  stopNotificationPolling();
+  token = null;
+  localStorage.removeItem('sd_token');
+  currentUser = null;
+  currentTicket = null;
+  notifications = [];
+  currentIntegrations = [];
+  notificationsReady = false;
+  toastedNotificationIds = new Set();
+  showAuth();
+}
+
+// ── API helper ────────────────────────────────────────────────────────────
+async function api(method, path, body, isForm) {
+  const opts = { method, headers: { Authorization: `Bearer ${token}` } };
+  if (body && isForm) { opts.body = body; }
+  else if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  const res = await fetch(path, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
+  return data;
+}
+
+function notificationSeenKey() {
+  return currentUser ? `sd_notification_seen_${currentUser.id}` : 'sd_notification_seen';
+}
+
+function getNotificationSeenAt() {
+  return localStorage.getItem(notificationSeenKey());
+}
+
+function setNotificationSeenAt(value) {
+  if (!value) return;
+  localStorage.setItem(notificationSeenKey(), value);
+}
+
+function isNotificationUnread(item) {
+  const seenAt = getNotificationSeenAt();
+  if (!seenAt) return true;
+  return new Date(item.created_at).getTime() > new Date(seenAt).getTime();
+}
+
+function updateNotificationBadge() {
+  const counter = document.getElementById('nav-updates-count');
+  const unread = notifications.filter(isNotificationUnread).length;
+  if (!unread) {
+    counter.style.display = 'none';
+    counter.textContent = '0';
+    return;
+  }
+  counter.style.display = '';
+  counter.textContent = unread > 99 ? '99+' : String(unread);
+}
+
+function renderNotifications() {
+  const el = document.getElementById('notifications-list');
+  if (!el) return;
+
+  if (!notifications.length) {
+    el.innerHTML = '<div class="text-muted">No recent updates.</div>';
+    updateNotificationBadge();
+    return;
+  }
+
+  el.innerHTML = notifications.map(item => `
+    <div class="notification-row ${isNotificationUnread(item) ? 'unread' : ''}" onclick="openNotification('${item.ticket_id}')">
+      <div class="notification-summary">${escHtml(item.summary)}</div>
+      <div class="artifact-desc" style="margin-bottom:8px">${escHtml(item.ticket_title)}</div>
+      <div class="notification-meta">
+        <span class="mono">${escHtml(item.case_number || item.ticket_id)}</span>
+        <span>${escHtml(item.actor_username || 'system')}</span>
+        <span>${formatDateTime(item.created_at)}</span>
+      </div>
+    </div>
+  `).join('');
+  updateNotificationBadge();
+}
+
+function markNotificationsSeen() {
+  if (!notifications.length) {
+    updateNotificationBadge();
+    return;
+  }
+  setNotificationSeenAt(notifications[0].created_at);
+  renderNotifications();
+}
+
+async function loadNotifications(options = {}) {
+  const silent = !!options.silent;
+
+  try {
+    const data = await api('GET', '/api/notifications?limit=20');
+    notifications = data.items || [];
+
+    if (!notificationsReady) {
+      notificationsReady = true;
+      if (!getNotificationSeenAt() && notifications[0]) {
+        setNotificationSeenAt(notifications[0].created_at);
+      }
+      renderNotifications();
+      return;
+    }
+
+    const fresh = notifications.filter(item => isNotificationUnread(item) && item.actor_id !== currentUser.id);
+    const unseenFresh = fresh.filter(item => !toastedNotificationIds.has(item.id));
+    unseenFresh.slice().reverse().forEach(item => {
+      toastedNotificationIds.add(item.id);
+      toast(`${item.summary} (${item.case_number || item.ticket_id})`);
+    });
+
+    renderNotifications();
+    if (document.getElementById('panel-updates').style.display !== 'none') {
+      markNotificationsSeen();
+    }
+  } catch (e) {
+    if (!silent) {
+      toast(e.message, true);
+    }
+  }
+}
+
+function startNotificationPolling() {
+  stopNotificationPolling();
+  notificationsReady = false;
+  toastedNotificationIds = new Set();
+  loadNotifications({ silent: true });
+  notificationPollHandle = setInterval(() => loadNotifications({ silent: true }), 15000);
+}
+
+function stopNotificationPolling() {
+  if (!notificationPollHandle) return;
+  clearInterval(notificationPollHandle);
+  notificationPollHandle = null;
+}
+
+function openNotification(ticketId) {
+  markNotificationsSeen();
+  openTicket(ticketId);
+}
+
+// ── Panels ────────────────────────────────────────────────────────────────
+function showPanel(name) {
+  if (name !== 'ticket-detail') previousPanel = name;
+  document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.style.display = '';
+  const nav = document.getElementById('nav-' + name);
+  if (nav) nav.classList.add('active');
+
+  if (name === 'tickets') loadTickets();
+  if (name === 'updates') {
+    renderNotifications();
+    markNotificationsSeen();
+  }
+  if (name === 'board') loadBoard();
+  if (name === 'integrations') loadIntegrations();
+  if (name === 'profile') renderProfile();
+}
+
+function goBackFromTicket() {
+  showPanel(previousPanel || (isSupportMode() ? 'board' : 'tickets'));
+}
+
+// ── Tickets ───────────────────────────────────────────────────────────────
+async function loadTickets() {
+  const el = document.getElementById('tickets-list');
+  el.innerHTML = '<div class="spinner"></div>';
+  try {
+    let tickets = await api('GET', '/api/tickets');
+    availableTickets = tickets.slice();
+    if (isSupportMode()) {
+      tickets = tickets.filter(t => t.agent_id === currentUser.id);
+    }
+    if (!tickets.length) {
+      el.innerHTML = `<div class="text-muted">${isSupportMode() ? 'No assigned requests.' : 'No tickets yet.'}</div>`;
+      return;
+    }
+    el.innerHTML = tickets.map(t => `
+      <div class="ticket-row" onclick="openTicket('${t.id}')">
+        <div>
+          <span class="badge badge-${t.priority}">${t.priority}</span>
+          <span class="badge badge-${t.status}" style="margin-left:4px">${t.status}</span>
+        </div>
+        <div class="ticket-title">${escHtml(t.title)}</div>
+        <div class="ticket-meta">${escHtml(t.case_number || t.id.slice(0,8))}</div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+async function ensureTicketsLoaded() {
+  if (availableTickets.length) return;
+  try {
+    availableTickets = await api('GET', '/api/tickets');
+  } catch {
+    availableTickets = [];
+  }
+}
+
+async function openTicket(id) {
+  currentTicket = await api('GET', `/api/tickets/${id}`);
+  renderTicketDetail(currentTicket);
+  showPanel('ticket-detail');
+}
+
+function renderTicketDetail(t) {
+  const isClosed = t.status === 'closed';
+  const conversation_section = `
+    <div class="card">
+      <div class="card-title">Conversation</div>
+      <div id="message-list" class="message-list"></div>
+      ${isClosed ? `<div class="text-muted" style="margin-bottom:14px">This request is closed. Reopen it before posting a new update.</div>` : ''}
+      <div class="form-group">
+        <label>New Message</label>
+        <textarea id="message-body" placeholder="Write an update or ask a clarifying question" ${isClosed ? 'disabled' : ''}></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="postMessage('${t.id}')" ${isClosed ? 'disabled' : ''}>Send Message</button>
+    </div>`;
+  const artifacts_section = `
+    <div class="card">
+      <div class="card-title">Attachments</div>
+      <div id="artifact-list"></div>
+      <hr class="divider">
+      ${isClosed ? `<div class="text-muted" style="margin-bottom:14px">Attachments are locked for closed requests.</div>` : ''}
+      <div class="form-group"><label>Upload File</label>
+        <input type="file" id="art-file" ${isClosed ? 'disabled' : ''} />
+        <input style="margin-top:6px" id="art-desc" placeholder="Short note for the attachment" ${isClosed ? 'disabled' : ''} />
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="uploadArtifact('${t.id}')" ${isClosed ? 'disabled' : ''}>Upload</button>
+    </div>`;
+  const support_section = isSupportMode() ? `
+    <div class="card">
+      <div class="card-title">Support Workflow</div>
+      <div class="grid2">
+        <div class="form-group">
+          <label>Status</label>
+          <select id="ticket-status">
+            <option value="backlog" ${t.status === 'backlog' ? 'selected' : ''}>Backlog</option>
+            <option value="open" ${t.status === 'open' ? 'selected' : ''}>Open</option>
+            <option value="closed" ${t.status === 'closed' ? 'selected' : ''}>Closed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="ticket-priority">
+            <option value="low" ${t.priority === 'low' ? 'selected' : ''}>Low</option>
+            <option value="medium" ${t.priority === 'medium' ? 'selected' : ''}>Medium</option>
+            <option value="high" ${t.priority === 'high' ? 'selected' : ''}>High</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Assigned To</label>
+        <div class="mono" style="padding:8px">${escHtml(t.agent_id || 'Unassigned')}</div>
+      </div>
+      <div class="form-group">
+        <label>Resolution</label>
+        <textarea id="ticket-resolution" placeholder="Document the fix or next action">${escHtml(t.resolution || '')}</textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary btn-sm" onclick="takeTicket('${t.id}')">${t.agent_id === currentUser.id ? 'Refresh Ownership' : 'Take Ownership'}</button>
+        <button class="btn btn-ghost btn-sm" onclick="saveTicketWorkflow('${t.id}')">Save Changes</button>
+      </div>
+    </div>` : (t.resolution ? `
+    <div class="card">
+      <div class="card-title">Support Notes</div>
+      <pre>${escHtml(t.resolution)}</pre>
+    </div>` : '');
+
+  document.getElementById('ticket-detail-content').innerHTML = `
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <span class="badge badge-${t.priority}">${t.priority}</span>
+        <span class="badge badge-${t.status}">${t.status}</span>
+        <span class="text-muted" style="margin-left:auto;font-size:12px">${escHtml(t.case_number || t.id)}</span>
+      </div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:8px">${escHtml(t.title)}</div>
+      <div style="color:var(--muted);margin-bottom:16px">${escHtml(t.description||'')}</div>
+      <div class="ticket-meta">Customer: ${escHtml(t.customer_id)}</div>
+      <div class="ticket-meta" style="margin-top:6px">Vendor Case ID: ${escHtml(t.vendor_case_id || '—')}</div>
+      <div class="ticket-meta" style="margin-top:6px">Device Serial: ${escHtml(t.device_serial || '—')}</div>
+    </div>
+    ${support_section}
+    ${conversation_section}
+    ${artifacts_section}
+    <div id="ticket-report-out"></div>`;
+  loadArtifacts(t.id);
+  loadMessages(t.id);
+}
+
+async function loadArtifacts(ticketId) {
+  const el = document.getElementById('artifact-list');
+  try {
+    const arts = await api('GET', `/api/tickets/${ticketId}/artifacts`);
+    el.innerHTML = arts.length ? arts.map(a => `
+      <div class="artifact-row">
+        <div class="artifact-info">
+          <div class="artifact-name">📎 ${escHtml(a.filename)}</div>
+          <div class="artifact-desc">${formatArtifactMeta(a)}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" data-filename="${escHtml(a.filename)}" onclick="downloadArtifact('${ticketId}','${a.id}', this.dataset.filename)">↓</button>
+      </div>`).join('') : '<div class="text-muted">No attachments</div>';
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+async function downloadArtifact(ticketId, artifactId, filename) {
+  try {
+    const res = await fetch(`/api/tickets/${ticketId}/artifacts/${artifactId}/download`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      let detail = 'Download failed';
+      try {
+        const data = await res.json();
+        detail = data.detail || detail;
+      } catch {}
+      throw new Error(detail);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename || 'download';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    toast(e.message, true);
+  }
+}
+
+async function uploadArtifact(ticketId) {
+  const file = document.getElementById('art-file').files[0];
+  const desc = document.getElementById('art-desc').value;
+  if (!file) { toast('Select a file', true); return; }
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('description', desc);
+  try {
+    const res = await fetch(`/api/tickets/${ticketId}/artifacts`, {
+      method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.detail || 'Upload failed');
+    }
+    toast('Uploaded!');
+    loadArtifacts(ticketId);
+  } catch(e) { toast(e.message, true); }
+}
+
+async function loadMessages(ticketId) {
+  const el = document.getElementById('message-list');
+  if (!el) return;
+  el.innerHTML = '<div class="spinner"></div>';
+  try {
+    const messages = await api('GET', `/api/tickets/${ticketId}/messages`);
+    if (!messages.length) {
+      el.innerHTML = '<div class="text-muted">No updates yet.</div>';
+      return;
+    }
+    el.innerHTML = messages.map(message => `
+      <div class="message-item">
+        <div class="message-meta">
+          <span class="badge badge-${message.author_role}">${escHtml(message.author_role)}</span>
+          <strong>${escHtml(message.author_username)}</strong>
+          <span>${formatDateTime(message.created_at)}</span>
+        </div>
+        <div class="message-body">${escHtml(message.body)}</div>
+      </div>`).join('');
+  } catch(e) {
+    el.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  }
+}
+
+async function postMessage(ticketId) {
+  const textarea = document.getElementById('message-body');
+  const body = textarea.value.trim();
+  if (!body) {
+    toast('Message cannot be empty', true);
+    return;
+  }
+  try {
+    await api('POST', `/api/tickets/${ticketId}/messages`, { body });
+    textarea.value = '';
+    loadMessages(ticketId);
+    toast('Message sent');
+  } catch(e) {
+    toast(e.message, true);
+  }
+}
+
+async function createTicket() {
+  const body = {
+    title: document.getElementById('nt-title').value,
+    description: document.getElementById('nt-desc').value,
+    vendor_case_id: document.getElementById('nt-vendor-case-id').value || undefined,
+    device_serial: document.getElementById('nt-serial').value || undefined,
+    priority: document.getElementById('nt-priority').value,
+  };
+  try {
+    const t = await api('POST', '/api/tickets', body);
+    toast('Ticket created!');
+    showPanel('tickets');
+  } catch(e) { toast(e.message, true); }
+}
+
+function renderProfile() {
+  document.getElementById('pf-username').value = currentUser.username || '';
+  document.getElementById('pf-email').value = currentUser.email || '';
+  document.getElementById('pf-phone').value = currentUser.contact_phone || '';
+}
+
+async function saveProfile() {
+  try {
+    currentUser = await api('PATCH', '/api/users/me', {
+      username: document.getElementById('pf-username').value,
+      email: document.getElementById('pf-email').value,
+      contact_phone: document.getElementById('pf-phone').value,
+    });
+    currentUser = await api('GET', '/api/users/me');
+    showApp();
+    showPanel('profile');
+    toast('Profile updated');
+  } catch(e) {
+    toast(e.message, true);
+  }
+}
+
+async function shareTicket() {
+  if (!currentTicket) return;
+  try {
+    const r = await api('POST', '/api/share', { ticket_id: currentTicket.id });
+    prompt('Share link:', `${window.location.origin}${r.share_path}`);
+  } catch(e) { toast(e.message, true); }
+}
+
+async function generateReport() {
+  if (!currentTicket) return;
+  try {
+    const r = await api('POST', '/api/reports', { ticket_id: currentTicket.id });
+    document.getElementById('ticket-report-out').innerHTML = `
+      <div class="card"><div class="card-title">Case Summary</div><pre>${escHtml(r.content)}</pre></div>`;
+  } catch(e) { toast(e.message, true); }
+}
+
+async function exportTicket() {
+  if (!currentTicket) return;
+  try {
+    const exported = await api('POST', '/api/files/exports', { ticket_id: currentTicket.id });
+    const res = await fetch(exported.download_path, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      let detail = 'Export failed';
+      try {
+        const data = await res.json();
+        detail = data.detail || detail;
+      } catch {}
+      throw new Error(detail);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = exported.export_name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    toast('Export ready');
+  } catch(e) {
+    toast(e.message, true);
+  }
+}
+
+async function takeTicket(ticketId) {
+  try {
+    currentTicket = await api('PATCH', `/api/tickets/${ticketId}`, {
+      agent_id: currentUser.id,
+      status: 'open',
+    });
+    renderTicketDetail(currentTicket);
+    loadBoard();
+    toast('Ticket assigned');
+  } catch(e) { toast(e.message, true); }
+}
+
+async function saveTicketWorkflow(ticketId) {
+  try {
+    currentTicket = await api('PATCH', `/api/tickets/${ticketId}`, {
+      status: document.getElementById('ticket-status').value,
+      priority: document.getElementById('ticket-priority').value,
+      resolution: document.getElementById('ticket-resolution').value,
+      agent_id: currentTicket.agent_id || undefined,
+    });
+    renderTicketDetail(currentTicket);
+    loadBoard();
+    toast('Ticket updated');
+  } catch(e) { toast(e.message, true); }
+}
+
+// ── Board (agent) ─────────────────────────────────────────────────────────
+async function loadBoard() {
+  const el = document.getElementById('board-list');
+  el.innerHTML = '<div class="spinner"></div>';
+  try {
+    const tickets = await api('GET', '/api/tickets');
+    if (!tickets.length) {
+      el.innerHTML = '<div class="text-muted">Queue is empty.</div>';
+      return;
+    }
+    el.innerHTML = tickets.map(t => `
+      <div class="ticket-row" onclick="openTicket('${t.id}')">
+        <div>
+          <span class="badge badge-${t.priority}">${t.priority}</span>
+          <span class="badge badge-${t.status}" style="margin-left:4px">${t.status}</span>
+        </div>
+        <div class="ticket-title">${escHtml(t.title)}</div>
+        <div class="ticket-meta" style="font-size:11px">${escHtml(t.agent_id ? 'Assigned' : 'Unassigned')} &nbsp;|&nbsp; ${escHtml(t.case_number || t.id.slice(0,8))}</div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+// ── Integrations ──────────────────────────────────────────────────────────
+function toggleNewIntegration() {
+  const el = document.getElementById('new-integration-form');
+  if (el.style.display === 'none') {
+    openIntegrationForm();
+    return;
+  }
+  cancelIntegrationEdit();
+}
+
+function resetIntegrationForm() {
+  document.getElementById('int-id').value = '';
+  document.getElementById('integration-form-title').textContent = 'New Endpoint';
+  document.getElementById('int-provider').innerHTML = DELIVERY_PROVIDERS.map(provider =>
+    `<option value="${provider.key}" ${provider.key === 'discord' ? 'selected' : ''}>${provider.label}</option>`
+  ).join('');
+  document.getElementById('int-name').value = '';
+  document.getElementById('int-signing-token').value = '';
+  document.getElementById('int-active').value = 'true';
+  updateIntegrationProviderHint();
+  renderIntegrationTicketOptions();
+}
+
+function updateIntegrationProviderHint() {
+  const provider = providerMeta(document.getElementById('int-provider').value);
+  document.getElementById('int-provider-hint').textContent = provider.summary;
+}
+
+function openIntegrationForm(integration) {
+  const el = document.getElementById('new-integration-form');
+  el.style.display = '';
+  renderIntegrationTicketOptions();
+
+  if (!integration) {
+    resetIntegrationForm();
+    return;
+  }
+
+  document.getElementById('int-id').value = integration.id;
+  document.getElementById('integration-form-title').textContent = 'Edit Endpoint';
+  document.getElementById('int-provider').innerHTML = DELIVERY_PROVIDERS.map(provider =>
+    `<option value="${provider.key}" ${provider.key === integration.provider ? 'selected' : ''}>${provider.label}</option>`
+  ).join('');
+  document.getElementById('int-name').value = integration.name || '';
+  document.getElementById('int-signing-token').value = '';
+  document.getElementById('int-active').value = integration.is_active ? 'true' : 'false';
+  document.getElementById('int-ticket').value = integration.ticket_id || '';
+  updateIntegrationProviderHint();
+}
+
+function cancelIntegrationEdit() {
+  resetIntegrationForm();
+  document.getElementById('new-integration-form').style.display = 'none';
+}
+
+function editIntegration(id) {
+  const integration = currentIntegrations.find(item => item.id === id);
+  if (!integration) {
+    toast('Integration not found', true);
+    return;
+  }
+  openIntegrationForm(integration);
+}
+
+async function loadIntegrations() {
+  const el = document.getElementById('integrations-list');
+  el.innerHTML = '<div class="spinner"></div>';
+  try {
+    await ensureTicketsLoaded();
+    renderIntegrationTicketOptions();
+    document.getElementById('integrations-panel-title').textContent =
+      isSupportMode() ? 'Notification Endpoints' : 'Ticket Notifications';
+    currentIntegrations = await api('GET', '/api/integrations');
+    el.innerHTML = currentIntegrations.length ? currentIntegrations.map(i => `
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <div style="font-weight:600">${escHtml(i.name)}</div>
+              <span class="badge badge-open">${escHtml(i.provider_label)}</span>
+              <span class="badge ${i.is_active ? 'badge-open' : 'badge-paused'}">${i.is_active ? 'active' : 'paused'}</span>
+            </div>
+            <div class="artifact-desc" style="margin-top:6px">${escHtml(i.provider_summary)}</div>
+            <div class="artifact-desc" style="margin-top:4px">${i.ticket_id ? `Ticket ${escHtml(i.ticket_id)}` : 'Workspace endpoint'}</div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-ghost btn-sm" onclick="editIntegration('${i.id}')">Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="triggerWebhook('${i.id}')">Send Test</button>
+          </div>
+        </div>
+        <div id="webhook-result-${i.id}"></div>
+      </div>`).join('') : '<div class="text-muted">No notification endpoints configured.</div>';
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+function renderIntegrationTicketOptions() {
+  const group = document.getElementById('integration-ticket-group');
+  const select = document.getElementById('int-ticket');
+  if (isSupportMode()) {
+    group.style.display = '';
+    select.innerHTML = `<option value="">Workspace endpoint</option>` + availableTickets.map(t =>
+      `<option value="${t.id}" ${currentTicket && currentTicket.id === t.id ? 'selected' : ''}>${escHtml(t.title)} (${t.id.slice(0,8)}…)</option>`
+    ).join('');
+    return;
+  }
+
+  group.style.display = '';
+  if (!availableTickets.length) {
+    select.innerHTML = '<option value="">Create a ticket first</option>';
+    return;
+  }
+  select.innerHTML = availableTickets.map(t =>
+    `<option value="${t.id}" ${currentTicket && currentTicket.id === t.id ? 'selected' : ''}>${escHtml(t.title)} (${t.id.slice(0,8)}…)</option>`
+  ).join('');
+}
+
+async function saveIntegration() {
+  const integrationId = document.getElementById('int-id').value;
+  const selectedTicketId = document.getElementById('int-ticket').value || undefined;
+  const body = {
+    name: document.getElementById('int-name').value,
+    provider: document.getElementById('int-provider').value,
+    signing_token: document.getElementById('int-signing-token').value || undefined,
+    ticket_id: selectedTicketId,
+    is_active: document.getElementById('int-active').value === 'true',
+  };
+  try {
+    if (integrationId) {
+      await api('PATCH', `/api/integrations/${integrationId}`, body);
+      toast('Integration updated');
+    } else {
+      await api('POST', '/api/integrations', body);
+      toast('Integration saved');
+    }
+    cancelIntegrationEdit();
+    loadIntegrations();
+  } catch(e) { toast(e.message, true); }
+}
+
+async function triggerWebhook(id) {
+  const el = document.getElementById(`webhook-result-${id}`);
+  el.innerHTML = '<div class="spinner" style="margin-top:8px"></div>';
+  try {
+    const r = await api('POST', `/api/integrations/${id}/trigger`);
+    el.innerHTML = `<div class="alert alert-success" style="margin-top:8px">${escHtml(r.provider_label || 'Notification')} delivery finished with HTTP ${r.status_code}</div>`;
+  } catch(e) { el.innerHTML = `<div class="alert alert-error" style="margin-top:8px">${e.message}</div>`; }
+}
+
+// ── Util ──────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatArtifactMeta(artifact) {
+  const parts = [];
+  if (artifact.public_ref) parts.push(`#${artifact.public_ref}`);
+  if (artifact.content_type) parts.push(artifact.content_type);
+  if (artifact.file_size) parts.push(formatBytes(artifact.file_size));
+  return parts.join(' | ') || 'Attachment';
+}
+
+function formatBytes(size) {
+  if (!size) return '0 B';
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString();
+}
+
+function toast(msg, isErr) {
+  const c = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = `toast-item ${isErr ? 'err' : 'ok'}`;
+  el.textContent = msg;
+  c.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+init();
+</script>
+</body>
+</html>

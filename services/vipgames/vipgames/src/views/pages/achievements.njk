@@ -1,0 +1,26 @@
+{% extends "layout.njk" %}
+{% block content %}
+<section class="panel">
+  <h1>Achievement Board</h1>
+  <div class="table-wrap">
+  <table class="ledger">
+    <thead><tr><th>Code</th><th>Title</th><th>Points</th><th>Unlocked</th></tr></thead>
+    <tbody>
+      {% for a in achievements %}
+      <tr><td>{{ a.code }}</td><td>{{ a.title }}</td><td>{{ a.points }}</td><td>{{ a.unlocked_at }}</td></tr>
+      {% else %}
+      <tr><td colspan="4">No achievements</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Detail Lookup</h2>
+  <div class="field-grid">
+    <label>Username <input id="ach-username" type="text" value="{{ user.username }}" maxlength="32" /></label>
+    <label>Code <input id="ach-code" type="text" value="ARCHIVIST" /></label>
+  </div>
+  <button class="btn" type="button" onclick="lookupAchievement(this)">Lookup</button>
+  <pre id="ach-out" class="output notice" role="status" hidden></pre>
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+INSERT INTO brand (name, is_marketplace_brand)
+VALUES
+    ('N0bile1967', TRUE),
+    ('State of mind', TRUE),
+    ('Am0uage', TRUE),
+    ('By K1lian)', TRUE),
+    ('Byredo', TRUE),
+    ('Frederic Malle', TRUE),
+    ('Maison Francis Kurkdjian', TRUE),
+    ('Montale', TRUE),
+    ('Ex Nihilo', TRUE),
+    ('Franck Boclet', TRUE),
+    ('Dolce & Gaben', TRUE),
+    ('Kle1n Maretti', TRUE),
+    ('Attar Collection', TRUE),
+    ('T0m F0rd', TRUE),
+    ('Liquides Imaginaires', TRUE),
+    ('Creed', TRUE),
+    ('Creep Christian', TRUE),
+    ('Haute Fragrance Company', TRUE),
+    ('Jo Malone', TRUE),
+    ('Lonevus', TRUE),
+    ('Memo', TRUE),
+    ('Profumo Di Firenze', TRUE),
+    ('Goldfield & Banks Australia', TRUE),
+    ('Justice has a f00l', TRUE),
+    ('Thomas Kosmala', TRUE),
+    ('Gloria Vanderbilt', TRUE)
+ON CONFLICT (name) DO UPDATE
+SET is_marketplace_brand = EXCLUDED.is_marketplace_brand;

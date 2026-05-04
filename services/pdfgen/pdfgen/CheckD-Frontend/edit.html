@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CheckD Main</title>
+    <link rel="stylesheet" href="bootstrap-5.3.8-dist/css/bootstrap.min.css"/>
+    <script src="bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .checklist-row {
+            width: 100%;
+            border: 1px solid black;
+            border-radius: 15px;
+            box-shadow: 2px 2px 8px 4px rgba(0,0,0,0.2);
+            padding: 1rch 1rch 1em 1em;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="javascript:void(0)">CheckD Checklist system</a>
+        <div class="collapse navbar-collapse" id="mynavbar">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Global checklists</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="edit.html">Checklist editor</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="export.html">Export results</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="my-files.html">My files</a>
+                </li>
+            </ul>
+            <div class="d-flex">
+                <button class="btn btn-primary me-2" type="button" data-bs-toggle="modal" data-bs-target="#createChecklistModal">Create new</button>
+                <div class="btn-group" id="nav-user-group" hidden>
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" id="nav-user-button">User #14881357</button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="edit.html">My checklists</a>
+                        <a class="dropdown-item" href="my-files.html">My files</a>
+                        <button class="dropdown-item" type="button" id="check-session-btn">Check session</button>
+                        <button class="dropdown-item" type="button" id="logout-btn">Logout</button>
+                    </div>
+                </div>
+                <button class="btn btn-primary" type="button" id="nav-login-button">Login/Register</button>
+            </div>
+        </div>
+    </div>
+</nav>
+<div class="container-fluid" style="margin-top:80px; margin-bottom:40px;">
+    <div id="list-result"></div>
+    <div id="checklists-list"></div>
+</div>
+<div class="modal" id="createChecklistModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Create new checklist</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <div class="mb-3 mt-3">
+                    <label for="cl-name" class="form-label">Checklist name:</label>
+                    <input type="text" class="form-control" id="cl-name" placeholder="Enter name" name="cl-name">
+                </div>
+                <div class="mb-3 mt-3">
+                    <label for="cl-desc" class="form-label">Checklist description:</label>
+                    <textarea class="form-control" id="cl-desc" placeholder="Enter description" name="cl-desc"></textarea>
+                </div>
+                <div class="mb-3 mt-3">
+                    <p class="form-label">Is checklist public?</p>
+                    <div class="btn-group">
+                        <button type="button" id="b-a" class="btn btn-primary">Public</button>
+                        <button type="button" id="b-b" class="btn btn-light">Private</button>
+                    </div>
+                </div>
+                <div class="mb-3 mt-3">
+                    <p class="form-label">Is checklist visible?</p>
+                    <div class="btn-group">
+                        <button type="button" id="b-c" class="btn btn-primary">Visible</button>
+                        <button type="button" id="b-d" class="btn btn-light">Hidden</button>
+                    </div>
+                </div>
+                <div id="create-modal-error"></div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="create-checklist-btn">Create</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal" id="sessionCheckModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Session check result</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Success: <span id="session-check-success">no</span></p>
+                <p class="mb-2">Session valid: <span id="session-check-valid">no</span></p>
+                <p class="mb-0">Error: <span id="session-check-error">null</span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<ul class="pagination justify-content-center" id="list-pagination">
+    <li class="page-item"><button class="page-link" id="page-prev" type="button">Prev</button></li>
+    <li class="page-item disabled"><span class="page-link" id="page-current">1 / 1</span></li>
+    <li class="page-item"><button class="page-link" id="page-next" type="button">Next</button></li>
+</ul>
+</body>
+<script src="js/app-config.js"></script>
+<script src="js/edit-page.js"></script>
+</html>

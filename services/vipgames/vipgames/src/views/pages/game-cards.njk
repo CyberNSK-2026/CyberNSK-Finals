@@ -1,0 +1,44 @@
+{% extends "layout.njk" %}
+{% block content %}
+<section class="panel">
+  <h1>Card Hall</h1>
+  <p class="hint">Your player id: <strong>{{ user.id }}</strong> · Current card: <strong id="card-current-id">none</strong> · Current trade: <strong id="trade-current-id">none</strong></p>
+  <div class="flow">
+    <div class="step">
+      <span class="step-index">1</span>
+      <div>
+        <h2>Create Card</h2>
+        <div class="field-grid">
+          <label>Card name <input id="card-name" type="text" maxlength="256" /></label>
+          <label>Power <input id="card-power" type="number" value="42" min="1" max="100" /></label>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button" onclick="createCard(this)">Create Card</button>
+          <label class="compact-label">Card ID <input id="card-id" type="number" min="1" inputmode="numeric" /></label>
+          <button class="btn ghost" type="button" onclick="loadCard(this)">Load Card</button>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-index">2</span>
+      <div>
+        <h2>Propose Trade</h2>
+        <div class="field-grid">
+          <label>Recipient user ID <input id="trade-user" type="number" min="1" inputmode="numeric" /></label>
+          <label>Trade card ID <input id="trade-card" type="number" min="1" inputmode="numeric" /></label>
+        </div>
+        <button class="btn" type="button" onclick="createTrade(this)">Create Trade</button>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-index">3</span>
+      <div>
+        <h2>Accept Trade</h2>
+        <label>Trade ID <input id="trade-id" type="number" min="1" inputmode="numeric" /></label>
+        <button class="btn" type="button" onclick="acceptTrade(this)">Accept Trade</button>
+      </div>
+    </div>
+  </div>
+  <pre id="cards-out" class="output notice" role="status" hidden></pre>
+</section>
+{% endblock %}

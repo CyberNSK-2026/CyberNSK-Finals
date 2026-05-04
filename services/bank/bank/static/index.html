@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeoBank</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0e1116;
+    --bg-card: #161b22;
+    --bg-input: #0d1117;
+    --border: #30363d;
+    --border-hi: #58a6ff;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --accent: #58a6ff;
+    --accent-h: #79b8ff;
+    --green: #56d364;
+    --red: #f85149;
+    --yellow: #e3b341;
+    --purple: #bc8cff;
+  }
+  body {
+    font-family: -apple-system, "Segoe UI", Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 1.5rem;
+    line-height: 1.55;
+    font-size: 14px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  code, .mono { font-family: "JetBrains Mono", "SF Mono", Consolas, monospace; }
+
+  /* ---- Header ---- */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+  .header-right { font-size: 0.85rem; text-align: right; color: var(--text-dim); }
+  .header-right .username { color: var(--text); font-weight: 600; }
+  .header-right .balance { color: var(--green); font-size: 1.1rem; font-weight: 600; }
+
+  /* ---- Tabs ---- */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ---- Cards ---- */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.4rem;
+    margin-bottom: 1.2rem;
+  }
+  .card h2 {
+    font-size: 0.95rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* ---- Forms ---- */
+  .field { margin-bottom: 0.9rem; }
+  label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  input, textarea, select {
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    color: var(--text);
+    border-radius: 6px;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  textarea { resize: vertical; min-height: 80px; font-family: "JetBrains Mono", monospace; font-size: 0.85rem; }
+  .row { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+  .row > * { flex: 1; }
+
+  /* ---- Buttons ---- */
+  button {
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 9px 18px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #0d1117;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  button:hover { background: var(--accent-h); }
+  button.secondary {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border);
+  }
+  button.secondary:hover { border-color: var(--accent); color: var(--accent); }
+  button.small { padding: 5px 12px; font-size: 0.78rem; }
+
+  /* ---- Tables ---- */
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th, td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    color: var(--text-dim);
+    font-weight: 500;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  tr:hover td { background: rgba(88, 166, 255, 0.05); }
+  td.mono { font-family: "JetBrains Mono", monospace; color: var(--text-dim); font-size: 0.78rem; }
+  td.amount { font-weight: 600; }
+  td.amount.pos { color: var(--green); }
+  td.amount.neg { color: var(--red); }
+
+  /* ---- Misc ---- */
+  .hidden { display: none !important; }
+  .empty { color: var(--text-dim); text-align: center; padding: 1.8rem; font-style: italic; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .badge.private { background: rgba(227, 179, 65, 0.15); color: var(--yellow); }
+  .badge.public { background: rgba(86, 211, 100, 0.15); color: var(--green); }
+  .badge.admin { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+  .badge.user { background: rgba(139, 148, 158, 0.15); color: var(--text-dim); }
+
+  pre {
+    background: var(--bg-input);
+    padding: 0.8rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 0.75rem;
+    overflow-x: auto;
+    color: var(--text-dim);
+    max-height: 250px;
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 18px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.85rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.25s;
+    max-width: 360px;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { border-color: var(--green); }
+  .toast.error { border-color: var(--red); }
+
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+  }
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-header h3 { font-size: 1.05rem; }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { color: var(--text-dim); font-size: 0.85rem; }
+  .stat-value { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">Neo<span>Bank</span></div>
+    <div class="header-right">
+      <div id="hdr-anonymous">Not signed in</div>
+      <div id="hdr-user" class="hidden">
+        <div class="username" id="hdr-username">Р Р†Р вЂљРІР‚Сњ</div>
+        <div class="balance">$<span id="hdr-balance">0.00</span></div>
+        <button class="small secondary" onclick="logout()" style="margin-top:4px;">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ AUTH ============ -->
+  <div id="screen-auth">
+    <div class="grid-2">
+      <div class="card">
+        <h2>Sign in</h2>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="login-username" placeholder="alice">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="login-password">
+        </div>
+        <button onclick="doLogin()">Sign in</button>
+      </div>
+      <div class="card">
+        <h2>Create account</h2>
+        <div class="field">
+          <label>Username (2-32 chars, a-z 0-9 _ -)</label>
+          <input type="text" id="reg-username" placeholder="new_user">
+        </div>
+        <div class="field">
+          <label>Password (6+ chars)</label>
+          <input type="password" id="reg-password">
+        </div>
+        <button onclick="doRegister()">Create account</button>
+        <p style="margin-top:0.8rem; color:var(--text-dim); font-size:0.78rem;">
+          New accounts start with $100.00
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div id="screen-app" class="hidden">
+
+    <div class="tabs">
+      <button class="tab active" data-tab="dashboard">Dashboard</button>
+      <button class="tab" data-tab="transfer">Transfer</button>
+      <button class="tab" data-tab="transactions">History</button>
+      <button class="tab" data-tab="notes">Notes</button>
+      <button class="tab" data-tab="messages">Messages</button>
+      <button class="tab" data-tab="users">Users</button>
+      <button class="tab" data-tab="api">API</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="tab-dashboard" class="tab-pane">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Account</h2>
+          <div class="stat-row">
+            <span class="stat-label">User ID</span>
+            <span class="stat-value mono" id="acc-id">Р Р†Р вЂљРІР‚Сњ</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Username</span>
+            <span class="stat-value" id="acc-username">Р Р†Р вЂљРІР‚Сњ</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Display name</span>
+            <span class="stat-value" id="acc-display">Р Р†Р вЂљРІР‚Сњ</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Balance</span>
+            <span class="stat-value" style="color:var(--green); font-size:1.2rem;">$<span id="acc-balance">0.00</span></span>
+          </div>
+          <button class="small secondary" onclick="loadAccount()" style="margin-top:0.8rem;">Refresh</button>
+        </div>
+        <div class="card">
+          <h2>Display name</h2>
+          <div class="field">
+            <label>Public display name (max 64)</label>
+            <input type="text" id="profile-name" placeholder="Your name">
+          </div>
+          <button onclick="updateProfile()">Save</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Spending overview</h2>
+        <div class="row">
+          <div class="field">
+            <label>Group by</label>
+            <select id="stats-group">
+              <option value="day">Day</option>
+              <option value="month">Month</option>
+              <option value="counterparty">Counterparty</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Period</label>
+            <select id="stats-period">
+              <option value="">All time</option>
+              <option value="week">Last week</option>
+              <option value="month">Last month</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button onclick="loadStats()">Update</button>
+          </div>
+        </div>
+        <div id="stats-result"></div>
+      </div>
+    </div>
+
+    <!-- Transfer -->
+    <div id="tab-transfer" class="tab-pane hidden">
+      <div class="card">
+        <h2>Send money</h2>
+        <div class="field">
+          <label>Recipient (username or user ID)</label>
+          <input type="text" id="tr-to" placeholder="alice or uuid">
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Amount ($)</label>
+            <input type="number" id="tr-amount" step="0.01" min="0.01" placeholder="10.00">
+          </div>
+          <div class="field" style="flex:2">
+            <label>Comment</label>
+            <input type="text" id="tr-comment" placeholder="Coffee, lunch, rent...">
+          </div>
+        </div>
+        <button onclick="doTransfer()">Send transfer</button>
+      </div>
+    </div>
+
+    <!-- Transactions -->
+    <div id="tab-transactions" class="tab-pane hidden">
+      <div class="card">
+        <h2>Transaction history</h2>
+        <div class="row" style="margin-bottom: 1rem;">
+          <div class="field">
+            <label>Sort by</label>
+            <select id="tx-sort">
+              <option value="created_at">Date</option>
+              <option value="amount">Amount</option>
+              <option value="id">ID</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Order</label>
+            <select id="tx-order">
+              <option value="desc">Newest first</option>
+              <option value="asc">Oldest first</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Limit</label>
+            <input type="number" id="tx-limit" value="50" min="1" max="200">
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button onclick="loadTransactions()">Refresh</button>
+          </div>
+        </div>
+        <div id="tx-list"></div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div id="tab-notes" class="tab-pane hidden">
+      <div class="grid-2">
+        <div class="card">
+          <h2>New note</h2>
+          <div class="field">
+            <label>Title</label>
+            <input type="text" id="note-title" placeholder="Title">
+          </div>
+          <div class="field">
+            <label>Body</label>
+            <textarea id="note-body" rows="6" placeholder="..."></textarea>
+          </div>
+          <div class="field">
+            <label>Visibility</label>
+            <select id="note-visibility">
+              <option value="private">Private (only you)</option>
+              <option value="public">Public</option>
+            </select>
+          </div>
+          <button onclick="createNote()">Save note</button>
+        </div>
+        <div class="card">
+          <h2>My notes</h2>
+          <div id="notes-list"></div>
+          <button class="small secondary" onclick="loadNotes()" style="margin-top:0.8rem;">Refresh</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>URL preview</h2>
+        <p style="color:var(--text-dim); font-size:0.82rem; margin-bottom:0.8rem;">
+          Generate a preview snippet for a note from any URL. Public notes are free; previews on private notes cost $50 (anti-abuse fee).
+        </p>
+        <div class="field">
+          <label>Note ID</label>
+          <input type="text" id="prev-noteid" placeholder="paste note id">
+        </div>
+        <div class="field">
+          <label>URL</label>
+          <input type="text" id="prev-url" placeholder="https://...">
+        </div>
+        <button onclick="doPreview()">Generate preview</button>
+        <div id="prev-result" style="margin-top:1rem;"></div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div id="tab-messages" class="tab-pane hidden">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Compose message</h2>
+          <div class="field">
+            <label>To (username)</label>
+            <input type="text" id="msg-to" placeholder="recipient">
+          </div>
+          <div class="field">
+            <label>Subject</label>
+            <input type="text" id="msg-subject" placeholder="Subject">
+          </div>
+          <div class="field">
+            <label>Body</label>
+            <textarea id="msg-body" rows="5" placeholder="Your message..."></textarea>
+          </div>
+          <button onclick="sendMessage()">Send</button>
+        </div>
+        <div class="card">
+          <h2>Folder</h2>
+          <div class="row">
+            <div class="field">
+              <label>View</label>
+              <select id="msg-folder" onchange="loadMessages()">
+                <option value="inbox">Inbox</option>
+                <option value="sent">Sent</option>
+                <option value="all">All</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <button class="secondary" onclick="loadMessages()">Refresh</button>
+            </div>
+          </div>
+          <div id="msg-list" style="margin-top:0.8rem;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users -->
+    <div id="tab-users" class="tab-pane hidden">
+      <div class="card">
+        <h2>All users</h2>
+        <div id="users-list"></div>
+        <button class="small secondary" onclick="loadUsers()" style="margin-top:0.8rem;">Refresh</button>
+      </div>
+    </div>
+
+    <!-- API Info -->
+    <div id="tab-api" class="tab-pane hidden">
+      <div class="card">
+        <h2>API endpoints</h2>
+        <p style="color:var(--text-dim); font-size:0.82rem; margin-bottom:0.8rem;">
+          All endpoints accept and return JSON. Authentication via <code>Authorization: Bearer &lt;jwt&gt;</code>.
+        </p>
+        <table>
+          <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+          <tr><td class="mono">POST</td><td class="mono">/api/auth/register</td><td>Create account</td></tr>
+          <tr><td class="mono">POST</td><td class="mono">/api/auth/login</td><td>Get JWT token</td></tr>
+          <tr><td class="mono">GET</td><td class="mono">/api/me</td><td>Current user info</td></tr>
+          <tr><td class="mono">PUT</td><td class="mono">/api/profile</td><td>Update display name</td></tr>
+          <tr><td class="mono">GET</td><td class="mono">/api/users</td><td>List all users</td></tr>
+          <tr><td class="mono">GET</td><td class="mono">/api/users/{username}</td><td>User profile + recent notes</td></tr>
+          <tr><td class="mono">POST</td><td class="mono">/api/transfer</td><td>Send money</td></tr>
+          <tr><td class="mono">GET</td><td class="mono">/api/transactions</td><td>Transaction history</td></tr>
+          <tr><td class="mono">GET</td><td class="mono">/api/transactions/stats</td><td>Aggregated stats</td></tr>
+          <tr><td class="mono">POST</td><td class="mono">/api/notes</td><td>Create note</td></tr>
+          <tr><td class="mono">GET</td><td class="mono">/api/notes</td><td>List my notes</td></tr>
+          <tr><td class="mono">GET</td><td class="mono">/api/note?id=</td><td>Read note</td></tr>
+          <tr><td class="mono">POST</td><td class="mono">/api/notes/preview</td><td>Generate URL preview</td></tr>
+          <tr><td class="mono">POST</td><td class="mono">/api/messages</td><td>Send message</td></tr>
+          <tr><td class="mono">GET</td><td class="mono">/api/messages?folder=</td><td>List messages</td></tr>
+          <tr><td class="mono">GET</td><td class="mono">/api/public-key</td><td>Server RSA public key</td></tr>
+          <tr><td class="mono">POST</td><td class="mono">/api/merchant/register</td><td>Register merchant</td></tr>
+          <tr><td class="mono">POST</td><td class="mono">/api/merchant/pay</td><td>Process merchant payment</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Server public key</h2>
+        <button class="small secondary" onclick="loadPublicKey()">Fetch key</button>
+        <pre id="pubkey">click "fetch key"</pre>
+      </div>
+
+      <div class="card">
+        <h2>Your JWT token</h2>
+        <pre id="jwt-display">not signed in</pre>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Note modal -->
+<div id="note-modal" class="modal-bg hidden" onclick="closeModalIfBg(event, 'note-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="note-modal-title">Note</h3>
+      <button class="small secondary" onclick="closeModal('note-modal')">Close</button>
+    </div>
+    <div class="stat-row"><span class="stat-label">Owner</span><span class="stat-value" id="note-modal-owner">Р Р†Р вЂљРІР‚Сњ</span></div>
+    <div class="stat-row"><span class="stat-label">Note ID</span><span class="mono" id="note-modal-id" style="font-size:0.78rem;">-</span></div>
+    <div class="stat-row"><span class="stat-label">Visibility</span><span id="note-modal-vis">Р Р†Р вЂљРІР‚Сњ</span></div>
+    <div class="stat-row"><span class="stat-label">Created</span><span class="mono" id="note-modal-created" style="font-size:0.78rem;">Р Р†Р вЂљРІР‚Сњ</span></div>
+    <div class="field" style="margin-top:1rem;">
+      <label>Body</label>
+      <pre id="note-modal-body">Р Р†Р вЂљРІР‚Сњ</pre>
+    </div>
+    <div class="field">
+      <label>Preview</label>
+      <pre id="note-modal-preview">Р Р†Р вЂљРІР‚Сњ</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Message modal -->
+<div id="msg-modal" class="modal-bg hidden" onclick="closeModalIfBg(event, 'msg-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="msg-modal-subject">Message</h3>
+      <button class="small secondary" onclick="closeModal('msg-modal')">Close</button>
+    </div>
+    <div class="stat-row"><span class="stat-label">From</span><span id="msg-modal-from">Р Р†Р вЂљРІР‚Сњ</span></div>
+    <div class="stat-row"><span class="stat-label">To</span><span id="msg-modal-to">Р Р†Р вЂљРІР‚Сњ</span></div>
+    <div class="stat-row"><span class="stat-label">Sent</span><span class="mono" id="msg-modal-when" style="font-size:0.78rem;">Р Р†Р вЂљРІР‚Сњ</span></div>
+    <div class="field" style="margin-top:1rem;">
+      <label>Body</label>
+      <pre id="msg-modal-body">Р Р†Р вЂљРІР‚Сњ</pre>
+    </div>
+  </div>
+</div>
+
+<!-- User profile modal -->
+<div id="user-profile-modal" class="modal-bg hidden" onclick="closeModalIfBg(event, 'user-profile-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="user-profile-title">Profile</h3>
+      <button class="small secondary" onclick="closeModal('user-profile-modal')">Close</button>
+    </div>
+    <div class="stat-row"><span class="stat-label">Username</span><span class="stat-value" id="user-profile-username">Р С—РЎвЂ”Р вЂ¦</span></div>
+    <div class="stat-row"><span class="stat-label">Display name</span><span class="stat-value" id="user-profile-display">Р С—РЎвЂ”Р вЂ¦</span></div>
+    <div class="stat-row"><span class="stat-label">User ID</span><span class="mono" id="user-profile-id" style="font-size:0.78rem;">Р С—РЎвЂ”Р вЂ¦</span></div>
+    <div class="stat-row"><span class="stat-label">Transactions</span><span class="stat-value" id="user-profile-tx">Р С—РЎвЂ”Р вЂ¦</span></div>
+    <div class="field" style="margin-top:1rem;">
+      <label>Recent public notes</label>
+      <div id="user-profile-notes"></div>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+// =====================================================
+// State
+// =====================================================
+const API = '';
+let TOKEN = localStorage.getItem('bank_token') || '';
+let USER  = JSON.parse(localStorage.getItem('bank_user') || 'null');
+
+// =====================================================
+// Utils
+// =====================================================
+function $(id) { return document.getElementById(id); }
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function toast(msg, type = '') {
+  const el = $('toast');
+  el.className = 'toast show ' + type;
+  el.textContent = msg;
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+async function api(method, path, body) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
+  const opts = { method, headers };
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  try {
+    const resp = await fetch(API + path, opts);
+    let data = null;
+    try { data = await resp.json(); } catch {}
+    return { ok: resp.ok, status: resp.status, data };
+  } catch (e) {
+    return { ok: false, status: 0, data: { error: 'Network: ' + e.message } };
+  }
+}
+
+// =====================================================
+// Auth
+// =====================================================
+async function doRegister() {
+  const username = $('reg-username').value.trim();
+  const password = $('reg-password').value;
+  if (!username || !password) { toast('Fill both fields', 'error'); return; }
+  const r = await api('POST', '/api/auth/register', { username, password });
+  if (r.ok) {
+    toast('Account created. Signing in...', 'success');
+    const r2 = await api('POST', '/api/auth/login', { username, password });
+    if (r2.ok) onLoginSuccess(r2.data);
+  } else {
+    toast(r.data.error || 'Register failed', 'error');
+  }
+}
+
+async function doLogin() {
+  const username = $('login-username').value.trim();
+  const password = $('login-password').value;
+  if (!username || !password) { toast('Fill both fields', 'error'); return; }
+  const r = await api('POST', '/api/auth/login', { username, password });
+  if (r.ok) onLoginSuccess(r.data);
+  else toast(r.data.error || 'Login failed', 'error');
+}
+
+function onLoginSuccess(data) {
+  TOKEN = data.token;
+  USER = { id: data.user_id, username: data.username };
+  localStorage.setItem('bank_token', TOKEN);
+  localStorage.setItem('bank_user', JSON.stringify(USER));
+  showApp();
+}
+
+function logout() {
+  TOKEN = '';
+  USER = null;
+  localStorage.removeItem('bank_token');
+  localStorage.removeItem('bank_user');
+  showAuth();
+}
+
+// =====================================================
+// View switching
+// =====================================================
+function showAuth() {
+  $('screen-auth').classList.remove('hidden');
+  $('screen-app').classList.add('hidden');
+  $('hdr-anonymous').classList.remove('hidden');
+  $('hdr-user').classList.add('hidden');
+}
+
+function showApp() {
+  $('screen-auth').classList.add('hidden');
+  $('screen-app').classList.remove('hidden');
+  $('hdr-anonymous').classList.add('hidden');
+  $('hdr-user').classList.remove('hidden');
+  $('hdr-username').textContent = USER.username;
+  $('jwt-display').textContent = TOKEN;
+  loadAccount();
+  loadStats();
+}
+
+function selectTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+  document.querySelector(`.tab[data-tab="${name}"]`).classList.add('active');
+  $('tab-' + name).classList.remove('hidden');
+  if (name === 'transactions') loadTransactions();
+  if (name === 'notes') loadNotes();
+  if (name === 'messages') loadMessages();
+  if (name === 'users') loadUsers();
+}
+
+// =====================================================
+// Account
+// =====================================================
+async function loadAccount() {
+  const r = await api('GET', '/api/me');
+  if (!r.ok) return;
+  const a = r.data;
+  $('acc-id').textContent = a.id;
+  $('acc-username').textContent = a.username;
+  $('acc-display').textContent = a.display_name || 'Р Р†Р вЂљРІР‚Сњ';
+  $('acc-balance').textContent = a.balance.toFixed(2);
+  $('hdr-balance').textContent = a.balance.toFixed(2);
+  $('profile-name').value = a.display_name || '';
+}
+
+async function updateProfile() {
+  const display_name = $('profile-name').value;
+  const r = await api('PUT', '/api/profile', { display_name });
+  if (r.ok) { toast('Saved', 'success'); loadAccount(); }
+  else toast(r.data.error || 'Failed', 'error');
+}
+
+// =====================================================
+// Transfer
+// =====================================================
+async function doTransfer() {
+  const to = $('tr-to').value.trim();
+  const amount = parseFloat($('tr-amount').value);
+  const comment = $('tr-comment').value.trim();
+
+  if (!to) { toast('Enter recipient', 'error'); return; }
+  if (!amount || amount <= 0) { toast('Enter positive amount', 'error'); return; }
+
+  const r = await api('POST', '/api/transfer', { to, amount, comment });
+  if (r.ok) {
+    toast(`Sent $${amount} to ${to}`, 'success');
+    $('tr-to').value = '';
+    $('tr-amount').value = '';
+    $('tr-comment').value = '';
+    loadAccount();
+  } else {
+    toast(r.data.error || 'Transfer failed', 'error');
+  }
+}
+
+// =====================================================
+// Transactions
+// =====================================================
+async function loadTransactions() {
+  const sort = $('tx-sort').value;
+  const order = $('tx-order').value;
+  const limit = $('tx-limit').value;
+  const params = new URLSearchParams({ sort, order, limit });
+  const r = await api('GET', '/api/transactions?' + params);
+  const list = $('tx-list');
+  if (!r.ok) {
+    list.innerHTML = `<div class="empty">Error: ${escapeHtml(r.data.error || r.status)}</div>`;
+    return;
+  }
+  if (!Array.isArray(r.data) || r.data.length === 0) {
+    list.innerHTML = '<div class="empty">No transactions</div>';
+    return;
+  }
+  let html = '<table><tr><th>When</th><th>From</th><th>To</th><th>Amount</th><th>Comment</th></tr>';
+  for (const tx of r.data) {
+    const out = USER && tx.from_user === USER.id;
+    const dt = new Date(tx.created_at).toLocaleString();
+    html += `<tr>
+      <td class="mono">${escapeHtml(dt)}</td>
+      <td>${escapeHtml(tx.from_username)}</td>
+      <td>${escapeHtml(tx.to_username)}</td>
+      <td class="amount ${out ? 'neg' : 'pos'}">${out ? '-' : '+'}$${tx.amount.toFixed(2)}</td>
+      <td>${escapeHtml(tx.comment || '')}</td>
+    </tr>`;
+  }
+  html += '</table>';
+  list.innerHTML = html;
+}
+
+async function loadStats() {
+  const group_by = $('stats-group').value;
+  const period = $('stats-period').value;
+  const params = new URLSearchParams({ group_by });
+  if (period) params.set('period', period);
+  const r = await api('GET', '/api/transactions/stats?' + params);
+  const el = $('stats-result');
+  if (!r.ok) {
+    el.innerHTML = `<div class="empty">Error: ${escapeHtml(r.data.error || r.status)}</div>`;
+    return;
+  }
+  if (!r.data.length) {
+    el.innerHTML = '<div class="empty">No data</div>';
+    return;
+  }
+  let html = '<table><tr><th>Bucket</th><th>Count</th><th>Total</th></tr>';
+  for (const s of r.data) {
+    html += `<tr>
+      <td>${escapeHtml(s.bucket)}</td>
+      <td>${s.count}</td>
+      <td class="amount">$${(s.total || 0).toFixed(2)}</td>
+    </tr>`;
+  }
+  html += '</table>';
+  el.innerHTML = html;
+}
+
+// =====================================================
+// Notes
+// =====================================================
+async function createNote() {
+  const title = $('note-title').value.trim();
+  const body = $('note-body').value;
+  const visibility = $('note-visibility').value;
+  if (!title || !body) { toast('Title and body required', 'error'); return; }
+  const r = await api('POST', '/api/notes', { title, body, visibility });
+  if (r.ok) {
+    toast('Note saved', 'success');
+    $('note-title').value = '';
+    $('note-body').value = '';
+    loadNotes();
+  } else {
+    toast(r.data.error || 'Failed', 'error');
+  }
+}
+
+async function loadNotes() {
+  const r = await api('GET', '/api/notes');
+  const list = $('notes-list');
+  if (!r.ok || !Array.isArray(r.data) || r.data.length === 0) {
+    list.innerHTML = '<div class="empty">No notes yet</div>';
+    return;
+  }
+  let html = '';
+  for (const n of r.data) {
+    const badge = n.visibility === 'private'
+      ? '<span class="badge private">PRIVATE</span>'
+      : '<span class="badge public">PUBLIC</span>';
+    html += `<div style="padding:10px 0; border-bottom:1px solid var(--border); cursor:pointer;" onclick="openNote('${n.id}')">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong>${escapeHtml(n.title)}</strong>${badge}
+      </div>
+      <div class="mono" style="font-size:0.72rem; color:var(--text-dim); margin-top:3px;">
+        ID: ${escapeHtml(n.id)}
+      </div>
+      <div class="mono" style="font-size:0.72rem; color:var(--text-dim); margin-top:3px;">
+        ${escapeHtml(new Date(n.created_at).toLocaleString())}
+      </div>
+    </div>`;
+  }
+  list.innerHTML = html;
+}
+
+async function openNote(id) {
+  const r = await api('GET', `/api/note?id=${encodeURIComponent(id)}`);
+  if (!r.ok) { toast(r.data.error || 'Failed', 'error'); return; }
+  const n = r.data;
+  $('note-modal-title').textContent = n.title;
+  $('note-modal-owner').textContent = n.owner_username;
+  $('note-modal-id').textContent = n.id;
+  $('note-modal-vis').innerHTML = n.visibility === 'private'
+    ? '<span class="badge private">PRIVATE</span>'
+    : '<span class="badge public">PUBLIC</span>';
+  $('note-modal-created').textContent = new Date(n.created_at).toLocaleString();
+  $('note-modal-body').textContent = n.body;
+  $('note-modal-preview').textContent = n.preview || '(no preview)';
+  $('note-modal').classList.remove('hidden');
+}
+
+async function doPreview() {
+  const note_id = $('prev-noteid').value.trim();
+  const url = $('prev-url').value.trim();
+  if (!note_id || !url) { toast('Note ID and URL required', 'error'); return; }
+  const r = await api('POST', '/api/notes/preview', { note_id, url });
+  const el = $('prev-result');
+  if (r.ok) {
+    el.innerHTML = `<div class="card" style="margin:0;"><strong>Preview generated:</strong><pre>${escapeHtml(r.data.preview)}</pre></div>`;
+    loadAccount();
+  } else {
+    el.innerHTML = `<div class="empty">Error: ${escapeHtml(r.data.error || r.status)}</div>`;
+  }
+}
+
+// =====================================================
+// Messages
+// =====================================================
+async function sendMessage() {
+  const to = $('msg-to').value.trim();
+  const subject = $('msg-subject').value.trim();
+  const body = $('msg-body').value;
+  if (!to || !subject || !body) { toast('All fields required', 'error'); return; }
+  const r = await api('POST', '/api/messages', { to, subject, body });
+  if (r.ok) {
+    toast('Message sent', 'success');
+    $('msg-to').value = '';
+    $('msg-subject').value = '';
+    $('msg-body').value = '';
+    loadMessages();
+  } else {
+    toast(r.data.error || 'Failed', 'error');
+  }
+}
+
+async function loadMessages() {
+  const folder = $('msg-folder').value;
+  const r = await api('GET', `/api/messages?folder=${folder}&limit=100`);
+  const list = $('msg-list');
+  if (!r.ok || !Array.isArray(r.data) || r.data.length === 0) {
+    list.innerHTML = '<div class="empty">No messages</div>';
+    return;
+  }
+  let html = '';
+  for (const m of r.data) {
+    const incoming = USER && m.recipient_id === USER.id;
+    const counterpart = incoming ? m.sender_username : m.recipient_username;
+    html += `<div style="padding:10px 0; border-bottom:1px solid var(--border); cursor:pointer;" onclick='openMessage(${JSON.stringify(m).replace(/'/g, "&apos;")})'>
+      <div style="display:flex; justify-content:space-between;">
+        <strong>${escapeHtml(m.subject)}</strong>
+        <span class="badge ${incoming ? 'public' : 'user'}">${incoming ? 'INBOX' : 'SENT'}</span>
+      </div>
+      <div style="color:var(--text-dim); font-size:0.78rem; margin-top:3px;">
+        ${incoming ? 'From' : 'To'}: ${escapeHtml(counterpart)} Р вЂ™Р’В· ${escapeHtml(new Date(m.created_at).toLocaleString())}
+      </div>
+    </div>`;
+  }
+  list.innerHTML = html;
+}
+
+function openMessage(m) {
+  $('msg-modal-subject').textContent = m.subject;
+  $('msg-modal-from').textContent = m.sender_username;
+  $('msg-modal-to').textContent = m.recipient_username;
+  $('msg-modal-when').textContent = new Date(m.created_at).toLocaleString();
+  $('msg-modal-body').textContent = m.body;
+  $('msg-modal').classList.remove('hidden');
+}
+
+// =====================================================
+// Users
+// =====================================================
+async function loadUsers() {
+  const r = await api('GET', '/api/users');
+  const list = $('users-list');
+  if (!r.ok || !Array.isArray(r.data) || r.data.length === 0) {
+    list.innerHTML = '<div class="empty">No users</div>';
+    return;
+  }
+  let html = '<table><tr><th>Username</th><th>Display name</th><th>User ID</th><th></th></tr>';
+  for (const u of r.data) {
+    html += `<tr>
+      <td><strong>${escapeHtml(u.username)}</strong></td>
+      <td>${escapeHtml(u.display_name || 'Р С—РЎвЂ”Р вЂ¦')}</td>
+      <td class="mono">${escapeHtml(u.id)}</td>
+      <td>
+        <button class="small secondary" onclick='openUserProfile(${JSON.stringify(u.username).replace(/'/g, "&apos;")})'>View profile</button>
+        <button class="small secondary" onclick="useAsRecipient('${escapeHtml(u.username)}')">Send $</button>
+      </td>
+    </tr>`;
+  }
+  html += '</table>';
+  list.innerHTML = html;
+}
+
+function useAsRecipient(username) {
+  $('tr-to').value = username;
+  selectTab('transfer');
+}
+
+async function openUserProfile(username) {
+  $('user-profile-title').textContent = `Profile: ${username}`;
+  $('user-profile-username').textContent = username;
+  $('user-profile-display').textContent = 'Loading...';
+  $('user-profile-id').textContent = 'Р С—РЎвЂ”Р вЂ¦';
+  $('user-profile-tx').textContent = 'Р С—РЎвЂ”Р вЂ¦';
+  $('user-profile-notes').innerHTML = '<div class="empty">Loading notes...</div>';
+  $('user-profile-modal').classList.remove('hidden');
+
+  const r = await api('GET', `/api/users/${encodeURIComponent(username)}`);
+  if (!r.ok) {
+    $('user-profile-display').textContent = 'Р С—РЎвЂ”Р вЂ¦';
+    $('user-profile-notes').innerHTML = `<div class="empty">Error: ${escapeHtml((r.data && r.data.error) || r.status)}</div>`;
+    toast((r.data && r.data.error) || 'Profile load failed', 'error');
+    return;
+  }
+
+  const profile = r.data || {};
+  const user = profile.user || {};
+  $('user-profile-title').textContent = `Profile: ${user.username || username}`;
+  $('user-profile-username').textContent = user.username || username;
+  $('user-profile-display').textContent = user.display_name || 'Р С—РЎвЂ”Р вЂ¦';
+  $('user-profile-id').textContent = user.id || 'Р С—РЎвЂ”Р вЂ¦';
+  $('user-profile-tx').textContent = String((profile.stats && profile.stats.transaction_count) || 0);
+
+  const publicNotes = filterVisiblePublicNotes(profile.recent_notes || []);
+  const notesEl = $('user-profile-notes');
+  if (!publicNotes.length) {
+    notesEl.innerHTML = '<div class="empty">No public notes</div>';
+    return;
+  }
+
+  let html = '';
+  for (const note of publicNotes) {
+    html += `<div style="padding:10px 0; border-bottom:1px solid var(--border);">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:0.8rem;">
+        <strong>${escapeHtml(note.title)}</strong>
+        <button class="small secondary" onclick='openNote(${JSON.stringify(note.id).replace(/'/g, "&apos;")})'>Open</button>
+      </div>
+      <div class="mono" style="font-size:0.72rem; color:var(--text-dim); margin-top:3px;">
+        ID: ${escapeHtml(note.id)}
+      </div>
+      <div class="mono" style="font-size:0.72rem; color:var(--text-dim); margin-top:3px;">
+        ${escapeHtml(new Date(note.created_at).toLocaleString())}
+      </div>
+      <pre style="margin-top:0.5rem;">${escapeHtml(note.body)}</pre>
+    </div>`;
+  }
+  notesEl.innerHTML = html;
+}
+
+function filterVisiblePublicNotes(notes) {
+  if (!Array.isArray(notes) || notes.length === 0) return [];
+  return notes.filter(note => note && note.visibility === 'public');
+}
+
+// =====================================================
+// API Info
+// =====================================================
+async function loadPublicKey() {
+  try {
+    const resp = await fetch('/api/public-key');
+    $('pubkey').textContent = await resp.text();
+  } catch (e) {
+    $('pubkey').textContent = 'Error: ' + e.message;
+  }
+}
+
+// =====================================================
+// Modals
+// =====================================================
+function closeModal(id) { $(id).classList.add('hidden'); }
+function closeModalIfBg(event, id) { if (event.target.id === id) closeModal(id); }
+
+// =====================================================
+// Init
+// =====================================================
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => selectTab(t.dataset.tab));
+});
+
+if (TOKEN && USER) showApp();
+else showAuth();
+</script>
+</body>
+</html>
+
+
+
+

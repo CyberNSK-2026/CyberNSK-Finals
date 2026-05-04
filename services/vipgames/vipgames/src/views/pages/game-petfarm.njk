@@ -1,0 +1,43 @@
+{% extends "layout.njk" %}
+{% block content %}
+<section class="panel">
+  <h1>Pet Farm</h1>
+  <p class="hint">Current pet: <strong id="pet-current-id">none</strong> · Current booster: <strong id="booster-current-id">none</strong></p>
+  <div class="flow">
+    <div class="step">
+      <span class="step-index">1</span>
+      <div>
+        <h2>Create Pet</h2>
+        <div class="field-grid">
+          <label>Pet name <input id="pet-name" type="text" value="griffin" maxlength="60" /></label>
+          <label>Pet tag <input id="pet-tag" type="text" maxlength="256" /></label>
+        </div>
+        <button class="btn" type="button" onclick="createPet(this)">Create Pet</button>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-index">2</span>
+      <div>
+        <h2>Create Booster</h2>
+        <label>Booster payload <input id="booster-payload" type="text" maxlength="256" /></label>
+        <button class="btn" type="button" onclick="createBooster(this)">Create Booster</button>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-index">3</span>
+      <div>
+        <h2>Apply And Inspect</h2>
+        <div class="field-grid">
+          <label>Booster ID <input id="booster-id" type="number" min="1" inputmode="numeric" /></label>
+          <label>Pet ID <input id="target-pet-id" type="number" min="1" inputmode="numeric" /></label>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button" onclick="applyBooster(this)">Apply Booster</button>
+          <button class="btn ghost" type="button" onclick="loadPet(this)">Load Pet</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <pre id="pet-out" class="output notice" role="status" hidden></pre>
+</section>
+{% endblock %}

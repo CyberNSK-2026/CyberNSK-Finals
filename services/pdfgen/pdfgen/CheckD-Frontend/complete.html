@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CheckD Complete Checklist</title>
+    <link rel="stylesheet" href="bootstrap-5.3.8-dist/css/bootstrap.min.css"/>
+    <script src="bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .checklist-row {
+            width: 100%;
+            border: 1px solid black;
+            border-radius: 15px;
+            box-shadow: 2px 2px 8px 4px rgba(0, 0, 0, 0.2);
+            padding: 1rch 1rch 1em 1em;
+        }
+        tr.question-row.is-invalid-question > td {
+            border-left: 4px solid #dc3545;
+            background-color: rgba(220, 53, 69, 0.08);
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="javascript:void(0)">CheckD Checklist system</a>
+        <div class="collapse navbar-collapse" id="mynavbar">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Global checklists</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="edit.html">Checklist editor</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="export.html">Export results</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="my-files.html">My files</a>
+                </li>
+            </ul>
+            <div class="d-flex">
+                <div class="btn-group" id="nav-user-group" hidden>
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" id="nav-user-button">User #14881357</button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="edit.html">My checklists</a>
+                        <a class="dropdown-item" href="my-files.html">My files</a>
+                        <button class="dropdown-item" type="button" id="check-session-btn">Check session</button>
+                        <button class="dropdown-item" type="button" id="logout-btn">Logout</button>
+                    </div>
+                </div>
+                <button class="btn btn-primary" type="button" id="nav-login-button">Login/Register</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid" style="margin-top:80px; margin-bottom:40px;">
+    <div class="container" style="margin-top: 1em;">
+        <div class="checklist-row">
+            <div id="complete-result"></div>
+            <h4 class="mb-3" id="checklist-title">Checklist Title</h4>
+            <p class="text-secondary" id="checklist-description">Complete all questions and submit your answers.</p>
+
+            <table class="table">
+                <tbody id="questions-container"></tbody>
+            </table>
+            <button type="button" class="btn btn-success" id="submit-checklist-btn">Submit</button>
+        </div>
+    </div>
+</div>
+<div class="modal" id="sessionCheckModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Session check result</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Success: <span id="session-check-success">no</span></p>
+                <p class="mb-2">Session valid: <span id="session-check-valid">no</span></p>
+                <p class="mb-0">Error: <span id="session-check-error">null</span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="js/app-config.js"></script>
+<script src="js/complete-page.js"></script>
+</html>

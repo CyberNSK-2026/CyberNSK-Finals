@@ -1,0 +1,17 @@
+services:
+  vipgames:
+    build: .
+    container_name: vipgames
+    ports:
+      - "8642:3000"
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
+      - DB_PATH=/app/data/vipgames.db
+      - COOKIE_SECRET=vip-cookie-secret-change-me
+    volumes:
+      - vipgames-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  vipgames-data:
